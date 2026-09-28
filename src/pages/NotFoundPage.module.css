@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: var(--space-8);
+  gap: var(--space-4);
+}
+
+.code {
+  font-size: 6rem;
+  font-weight: var(--font-bold);
+  color: hsl(var(--muted-foreground) / 0.3);
+  line-height: 1;
+}
+
+.title {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.message {
+  font-size: var(--text-base);
+  color: hsl(var(--muted-foreground));
+  max-width: 400px;
+}

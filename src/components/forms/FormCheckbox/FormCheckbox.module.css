@@ -1,0 +1,25 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.label {
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.hint {
+  font-size: var(--text-xs);
+  color: hsl(var(--muted-foreground));
+  padding-left: calc(1rem + var(--space-2));
+}
+.error {
+  font-size: var(--text-xs);
+  color: hsl(var(--destructive));
+  font-weight: var(--font-medium);
+  padding-left: calc(1rem + var(--space-2));
+}

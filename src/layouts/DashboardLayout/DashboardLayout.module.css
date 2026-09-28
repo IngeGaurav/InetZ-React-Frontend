@@ -1,0 +1,31 @@
+.root {
+  display: flex;
+  min-height: 100vh;
+  background-color: hsl(var(--background));
+}
+
+.body {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  transition: margin-left var(--transition-layout);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.bodyCollapsed {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+.main {
+  flex: 1;
+  padding: var(--space-6);
+  margin-top: var(--header-height);
+}
+
+@media (max-width: 767px) {
+  .body,
+  .bodyCollapsed {
+    margin-left: 0;
+  }
+}
