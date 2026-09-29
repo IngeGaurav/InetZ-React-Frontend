@@ -23,12 +23,28 @@ import TableBody from '@mui/material/TableBody';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import CardActionArea from '@mui/material/CardActionArea';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Autocomplete from '@mui/material/Autocomplete';
+import LinearProgress from '@mui/material/LinearProgress';
+import Badge from '@mui/material/Badge';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { DataGrid } from '@mui/x-data-grid';
-import { tokens } from '@/theme';
+import { tokens, statusChipSx, trendChipSx, tabsPillSx } from '@/theme';
+import { BellIcon, AlertTriangleIcon, ChevronDownIcon } from '@/components/icons';
+import { iconGroups, iconCount } from '@/components/icons/iconRegistry';
 
 const { color, utility, status, trend, hierarchy, domain, dashboardLevel, cardGradient, gradient } =
   tokens;
+
+const utilityOptions = Object.keys(utility);
 
 const Section = ({ title, children }) => (
   <div className="mb-10">
@@ -157,6 +173,35 @@ const ThemePreview = () => {
           </div>
         </Section>
 
+        <Section title="Cards">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+            <Card>
+              <CardHeader title="Energy Flow Summary" subheader="by unit — last 7 days" />
+              <CardContent>
+                <Typography variant="body2">
+                  Plain card — no action area, hover has no lift.
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardActionArea>
+                <CardHeader title="Clickable card" subheader="hover lifts + shadow.hover" />
+                <CardContent>
+                  <Typography variant="body2">Wrapped in CardActionArea.</Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+            <Card className="Mui-selected">
+              <CardHeader title="Selected card" subheader="shadow.selected keyline" />
+              <CardContent>
+                <Typography variant="body2">
+                  Selected state — 1px orange keyline + soft glow.
+                </Typography>
+              </CardContent>
+            </Card>
+          </div>
+        </Section>
+
         <Section title="Inputs & selection controls">
           <div className="flex flex-wrap items-start gap-4">
             <TextField label="Outlined input" placeholder="Type here" size="small" />
@@ -179,6 +224,18 @@ const ThemePreview = () => {
           </div>
         </Section>
 
+        <Section title="Autocomplete (multi-select)">
+          <Autocomplete
+            multiple
+            options={utilityOptions}
+            defaultValue={[utilityOptions[0], utilityOptions[2]]}
+            sx={{ maxWidth: 360 }}
+            renderInput={(params) => (
+              <TextField {...params} label="Utilities" placeholder="Add..." />
+            )}
+          />
+        </Section>
+
         <Section title="Chips">
           <div className="flex flex-wrap gap-2">
             <Chip label="Outlined" variant="outlined" />
@@ -188,14 +245,98 @@ const ThemePreview = () => {
             <Chip label="Warning" color="warning" />
             <Chip label="Error" color="error" onDelete={() => {}} />
           </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Chip variant="metric" label="Load factor 0.82" />
+            <Chip variant="metric" color="secondary" label="SEC 128.4" />
+            <Chip variant="count" label="12" />
+            <Chip variant="count" color="error" label="3" />
+            <Chip variant="status" sx={statusChipSx('Running')} label="Running" />
+            <Chip variant="status" sx={statusChipSx('Critical')} label="Critical" />
+            <Chip variant="trend" sx={trendChipSx('up')} label="▲ 8.2%" />
+            <Chip variant="trend" sx={trendChipSx('down')} label="▼ 3.1%" />
+          </div>
         </Section>
 
-        <Section title="Tabs (underline variant)">
+        <Section title="Tabs (underline + pill variants)">
           <Tabs value={tab} onChange={(_, v) => setTab(v)}>
             <Tab label="Overview" />
             <Tab label="Emissions" />
             <Tab label="Utilities" />
           </Tabs>
+          <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ ...tabsPillSx, mt: 2 }}>
+            <Tab label="Overview" />
+            <Tab label="Emissions" />
+            <Tab label="Utilities" />
+          </Tabs>
+        </Section>
+
+        <Section title="Segmented / enclosed toggle buttons">
+          <div className="flex flex-wrap items-center gap-4">
+            <ToggleButtonGroup value={tab} exclusive onChange={(_, v) => v !== null && setTab(v)}>
+              <ToggleButton value={0}>Day</ToggleButton>
+              <ToggleButton value={1}>Week</ToggleButton>
+              <ToggleButton value={2}>Month</ToggleButton>
+            </ToggleButtonGroup>
+            <ToggleButtonGroup
+              variant="enclosed"
+              value={tab}
+              exclusive
+              onChange={(_, v) => v !== null && setTab(v)}
+            >
+              <ToggleButton value={0}>Table</ToggleButton>
+              <ToggleButton value={1}>Chart</ToggleButton>
+              <ToggleButton value={2}>Map</ToggleButton>
+            </ToggleButtonGroup>
+          </div>
+        </Section>
+
+        <Section title="Progress bars">
+          <div className="flex max-w-sm flex-col gap-3">
+            <LinearProgress variant="determinate" value={72} color="info" />
+            <LinearProgress variant="determinate" value={45} color="primary" />
+            <LinearProgress variant="determinate" value={88} color="error" />
+          </div>
+        </Section>
+
+        <Section title="Badges">
+          <div className="flex flex-wrap items-center gap-6">
+            <Badge badgeContent={4} color="primary">
+              <BellIcon size={22} style={{ color: color.text.control }} />
+            </Badge>
+            <Badge badgeContent={12} color="error">
+              <AlertTriangleIcon size={22} style={{ color: color.text.control }} />
+            </Badge>
+            <div
+              className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-semibold"
+              style={{ borderColor: color.border.soft, color: color.text.control }}
+            >
+              Emissions
+              <Badge variant="tab" badgeContent={5} color="primary" />
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Accordion">
+          <div className="max-w-xl">
+            <Accordion defaultExpanded>
+              <AccordionSummary expandIcon={<ChevronDownIcon size={16} />}>
+                Energy Flow by Unit
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography variant="body2">
+                  Expanded by default — single-open group pattern used inside modals.
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion>
+              <AccordionSummary expandIcon={<ChevronDownIcon size={16} />}>
+                SEU Compliance Matrix
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography variant="body2">Collapsed panel content.</Typography>
+              </AccordionDetails>
+            </Accordion>
+          </div>
         </Section>
 
         <Section title="Alerts">
@@ -350,6 +491,44 @@ const ThemePreview = () => {
                 {lvl.tints.map((t, i) => (
                   <div key={i} className="h-6 flex-1 rounded" style={{ background: t }} />
                 ))}
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section title={`Icons (${iconCount}) — bare / light tile / dark tile`}>
+          <div className="flex flex-col gap-6">
+            {iconGroups.map((g) => (
+              <div key={g.group}>
+                <Typography
+                  variant="overline"
+                  display="block"
+                  sx={{ mb: 1.5, color: color.text.caption }}
+                >
+                  {g.group}
+                </Typography>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                  {g.icons.map((icon) => (
+                    <div
+                      key={icon.name}
+                      className="flex flex-col items-center gap-2 rounded-lg border p-3 text-center"
+                      style={{ borderColor: color.border.soft, background: color.surface.sunken }}
+                      title={icon.usage}
+                    >
+                      <div className="flex items-center gap-2">
+                        <icon.Component size={20} style={{ color: color.text.control }} />
+                        <icon.Component theme="light" />
+                        <icon.Component theme="dark" />
+                      </div>
+                      <div
+                        className="truncate text-[10px] font-medium"
+                        style={{ color: color.text.secondary, maxWidth: '100%' }}
+                      >
+                        {icon.name}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

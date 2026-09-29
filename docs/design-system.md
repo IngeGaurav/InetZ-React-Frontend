@@ -48,27 +48,53 @@ When building a KPI tile, status pill, trend chip, or domain-tinted section head
 
 Scoped to the highest-value, most-reused primitives first rather than transcribing every documented state in one pass. Build deferred items as composed patterns (using the primitives below) when the route that needs them is actually developed — don't pre-build them speculatively.
 
-**Implemented in `muiTheme.js`:**
+**Implemented in `muiTheme.js`** (as of the 2026-09-29 rewrite — see `docs/decisions.md`):
 - Button — `contained`/`outlined`/`text` + custom `variants`: `tonal`, `onBrand`. Sizes match the doc's 28/38/46px heights.
-- Inputs — `MuiOutlinedInput`, `MuiInputLabel`, `MuiFormHelperText`.
-- Select/Menu — `MuiMenu`, `MuiMenuItem`.
-- Checkbox / Radio / Switch — brand-colored, default `color="primary"`.
-- Tabs — **underline variant only**.
-- Chip — outlined + filled (primary/secondary/error/warning/success tint pairs).
-- Dialog / Backdrop / Alert / Tooltip.
+- IconButton — square, bordered secondary style by default; `color="primary"` = filled orange.
+- Inputs — `MuiOutlinedInput`, `MuiInputLabel`, `MuiFormHelperText`, `MuiInputAdornment`. `MuiTextField` defaults to `variant="outlined" size="small" fullWidth`.
+- Select/Menu/Autocomplete — `MuiSelect`, `MuiMenu`, `MuiMenuItem`, `MuiAutocomplete` (multi-select with checkbox rows + filled chips).
+- Selection controls — Checkbox/Radio use **custom SVG tick/ring icons** (not MUI's defaults) matching the doc's exact geometry; Switch is brand-colored.
+- Tabs — underline (default) **and** pill variant (`sx={tabsPillSx}`).
+- Toggle buttons — `ToggleButtonGroup`/`ToggleButton`, default = segmented, `variant="enclosed"` = enclosed tabs.
+- Chip — outlined/filled + custom `variants`: `metric` (teal, or orange via `color="secondary"`), `count` (orange or `color="error"`), `status` (`sx={statusChipSx('Running')}`, one entry per equipment status), `trend` (`sx={trendChipSx('up'|'down')}`).
+- Badge — default + `variant="tab"` (static count pill for use inside a tab label).
+- Card/CardHeader/CardContent/CardActionArea — hover-lift only when wrapped in `CardActionArea`; `.Mui-selected` gets the selected-shadow keyline.
+- Accordion/AccordionSummary/AccordionDetails — single-open group pattern for modals.
+- LinearProgress — `color="info"` (health/teal), `color="primary"` (warning band), `color="error"` (critical band).
+- Dialog / Backdrop / Alert / Tooltip / Popover.
 - Pagination — active state uses teal (`#3EA9A0`), not brand orange, per the doc.
 - Table (plain MUI `<Table>`) — light-touch header/cell/row styling.
 - DataGrid (MUI X Community) — header/cell/row/border styling matching the Table anatomy spec; this is the **standard table component** going forward, not `<Table>`.
+- Full 25-slot elevation `shadows` array wired into `createTheme`, plus sx helpers for variants MUI can't express as props: `statusChipSx(name)`, `StatusDot`, `trendChipSx(dir)`, `tabsPillSx`, `closeButtonSx`. Import these from `@/theme` alongside `theme`.
 
-**Explicitly deferred (documented in the mockup, not yet built):**
-- Tabs: pill, segmented, enclosed, count-badge variants (only underline is themed).
-- Feedback/overlay "Planned" components: skeleton loader, stepper, timeline, drawer content patterns, toast/snackbar composition beyond MUI's base `Alert`/`Snackbar` styling.
-- Status pills / trend chips / KPI-card composed patterns — these are compositions of Chip + Typography + the `status`/`trend`/`cardGradient` token groups above, not new theme entries; build them where first needed as a shared component under `src/components/`, then note it here.
-- Date-range picker popover styling.
-- Icon set (24×24 grid, ~1.9px stroke, `currentColor`) — not yet inventoried; use `@mui/icons-material` for now and swap to the custom set if/when it's needed pixel-exact.
-- Figma export values (x/y/blur/spread per shadow tier) — present in the source doc for designer handoff, not needed for the CSS implementation (the `box-shadow` strings in `tokens.js` are the actual values, already exact).
+**Deferred:**
+- Date picker (`MuiPickersPopper`/`MuiPickersDay`/`MuiDayCalendar`/`MuiPickersCalendarHeader` overrides exist in the theme, ready to go, but `@mui/x-date-pickers` itself isn't installed — add it when a route actually needs a date picker).
+- Feedback/overlay "Planned" components: skeleton loader, stepper, timeline, drawer content, toast/snackbar composition beyond MUI's base `Alert`.
+- KPI-card composed patterns using `cardGradient` — compositions of Card + Typography + the `cardGradient` token group, not new theme entries; build where first needed under `src/components/`, then note it here.
+- Figma export values (x/y/blur/spread per shadow tier) — present in the source doc for designer handoff, not needed for the CSS implementation (the `box-shadow` strings in `tokens.js`/`componentTokens.shadow` are the actual values, already exact).
 
 When you build one of the deferred items, move it from this list into "Implemented" and note which file the reusable component lives in.
+
+## Icons
+
+The mockup's full custom icon set (76 icons across 8 groups: Site hierarchy, Navigation & shell, Actions, Arrows & chevrons, Data & charts, Status & alerts, Process & industrial, Files & misc) ships as **individual tree-shakeable React components**, not static SVG files and not a data-driven generic `<Icon name="..." />` renderer:
+
+- `src/components/icons/icons.jsx` — the 76 components, one named export each (`SiteIcon`, `DownloadIcon`, `AlertTriangleIcon`, ...), built via a shared `createIcon()` factory. Import only what a route actually uses — unused icons are dropped from that route's bundle by the bundler, which is the whole point of this over the earlier static-file/data-object approaches (see `docs/decisions.md`, 2026-09-29 entries, for why those were replaced).
+- `src/components/icons/iconRegistry.js` — grouping/usage metadata (`iconGroups`, `iconCount`) for the **"/" theme-preview page only**. It necessarily imports all 76 components to build the "show everything" grid, so don't import this file from real feature code — import icon components directly from `./icons` (or the barrel) instead, or this registry's blanket import defeats the tree-shaking the split exists for.
+- `src/components/icons/index.js` — barrel: `export * from './icons'`. `import { SiteIcon, DownloadIcon } from '@/components/icons'`.
+
+Usage:
+```jsx
+<SiteIcon />                        // bare 20px glyph, color = currentColor
+<SiteIcon size={16} color="#E08A3C" />
+<SiteIcon theme="light" />          // 34×34 tile: bg #FCEAD5, icon #E08A3C
+<SiteIcon theme="dark" />           // 34×34 tile: bg #F2A056, icon #FFFFFF
+```
+Stroke icons use the doc's exact recipe (24×24 viewBox, `fill="none"`, `stroke="currentColor"`, 1.9px, round caps/joins). One icon (`AssetIcon`, the compass/gear glyph for asset-level nav) is filled instead of stroked, 48×48 viewBox — handled automatically by `createIcon`'s `filled` flag.
+
+This custom set is for domain/nav iconography that matches the mockup exactly (equipment, utilities, site hierarchy, status, etc.). `@mui/icons-material` is still fine for generic MUI-component-adjacent icons (e.g. a Dialog's close button) where pixel-matching the mockup doesn't matter. Don't duplicate an icon that already exists here by pulling the equivalent from `lucide-react`/`@mui/icons-material` instead — prefer the custom one so usage stays consistent with the mockup.
+
+All 76 icons are rendered on the `/` showcase route (`src/pages/ThemePreview.jsx`, via `iconRegistry.js`) for a visual check against the mockup.
 
 ## Conventions (see also CLAUDE.md)
 
