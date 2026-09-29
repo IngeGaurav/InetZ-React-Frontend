@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { PublicRoute } from './PublicRoute';
 import { AuthLayout } from '@/layouts/AuthLayout/AuthLayout';
@@ -23,6 +23,8 @@ const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
 // eslint-disable-next-line react-refresh/only-export-components
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 // eslint-disable-next-line react-refresh/only-export-components
+const ThemePreview = lazy(() => import('@/pages/ThemePreview'));
+// eslint-disable-next-line react-refresh/only-export-components
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 // eslint-disable-next-line react-refresh/only-export-components
 const ErrorPage = lazy(() => import('@/pages/ErrorPage'));
@@ -34,6 +36,12 @@ const wrap = (Component) => (
 );
 
 const router = createBrowserRouter([
+  // ── Temporary: "/" shows the component/theme showcase directly, no login required.
+  // Login itself is left intact (still reachable at /login, untouched) but not wired
+  // up as the default route yet — swap this back to <Navigate to={ROUTES.DASHBOARD} />
+  // (or straight to ROUTES.LOGIN) once real auth is ready to be the entry point again.
+  { path: ROUTES.HOME, element: wrap(ThemePreview) },
+
   // ── Public routes (redirect out if already authenticated) ──
   {
     element: <PublicRoute />,
@@ -55,7 +63,6 @@ const router = createBrowserRouter([
       {
         element: <DashboardLayout />,
         children: [
-          { path: ROUTES.HOME, element: <Navigate to={ROUTES.DASHBOARD} replace /> },
           { path: ROUTES.DASHBOARD, element: wrap(DashboardPage) },
           // Add more protected routes here as features grow
         ],

@@ -11,10 +11,19 @@
     "lint:fix": "eslint . --ext js,jsx --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,css}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "patch-package"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource-variable/noto-sans": "^5.3.0",
     "@hookform/resolvers": "^5.4.0",
+    "@mui/icons-material": "^9.3.1",
+    "@mui/material": "^9.3.1",
+    "@mui/system": "9.3.0",
+    "@mui/x-data-grid": "^9.14.0",
     "@radix-ui/react-alert-dialog": "^1.1.17",
     "@radix-ui/react-avatar": "^1.2.0",
     "@radix-ui/react-checkbox": "^1.3.5",
@@ -65,8 +74,12 @@
     "eslint-plugin-react-refresh": "^0.5.3",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
+    "patch-package": "^8.0.1",
     "prettier": "^3.9.4",
     "vite": "^8.1.0"
+  },
+  "overrides": {
+    "@mui/system": "9.3.0"
   },
   "lint-staged": {
     "src/**/*.{js,jsx}": [

@@ -3,6 +3,9 @@ import { RouterProvider } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Provider as ReduxProvider, useDispatch } from 'react-redux';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { theme } from '@/theme';
 import { router } from './routes';
 import store from './redux/store';
 import queryClient from './lib/queryClient';
@@ -43,10 +46,13 @@ const AppInner = () => {
 const App = () => (
   <ReduxProvider store={store}>
     <QueryClientProvider client={queryClient}>
-      <AppInner />
-      {import.meta.env.VITE_ENABLE_REACT_QUERY_DEVTOOLS === 'true' && (
-        <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
-      )}
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AppInner />
+        {import.meta.env.VITE_ENABLE_REACT_QUERY_DEVTOOLS === 'true' && (
+          <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
+        )}
+      </ThemeProvider>
     </QueryClientProvider>
   </ReduxProvider>
 );

@@ -40,26 +40,32 @@
 /* ── Base layer ────────────────────────────────────────────── */
 @layer base {
   :root {
-    /* Light mode tokens (Slate base) */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Brand tokens (iEnerZ Design System v1.0) — HSL equivalents of src/theme/tokens.js,
+       repointed so Tailwind's bg-primary/bg-accent/etc. utilities stay in sync with the
+       MUI theme (src/theme/muiTheme.js). Only these Tailwind-mapped variables were
+       repointed; .dark and --sidebar-* are untouched (out of scope — no dark mode is
+       defined in the design doc, and Tailwind utilities should stay layout-only per
+       CLAUDE.md, not be used to restyle MUI components). Update tokens.js first, then
+       recompute here if brand colors change. */
+    --background: 37 27% 94%;
+    --foreground: 0 0% 21%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 21%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --popover-foreground: 0 0% 21%;
+    --primary: 28.5 86% 64%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 175 41% 41%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 33 24% 93%;
+    --muted-foreground: 36 6% 46%;
+    --accent: 32 87% 91%;
+    --accent-foreground: 27 62% 44%;
+    --destructive: 2 64% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 35 31% 89%;
+    --input: 36 26% 85%;
+    --ring: 28.5 86% 64%;
     --radius: 0.5rem;
 
     /* Sidebar */
