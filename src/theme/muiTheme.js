@@ -131,6 +131,16 @@ export const componentTokens = {
     body: "'Noto Sans Variable', 'Noto Sans', sans-serif",
     ui: "'DM Sans Variable', 'DM Sans', sans-serif",
   },
+  // App shell (topbar + collapsible sidebar) — pixel/color spec taken verbatim from the
+  // reference "SideBar and TopBar" mockup. Values not already covered by the tokens above
+  // (rail bg reuses brand.gray, header gradient reuses gradient.header, avatar gradient is
+  // built from brand.orange/orangeHover) live here as the shell's own extension of the tokens.
+  shell: {
+    headerHeight: 50,
+    railWidth: 165,
+    railActiveBg: '#796F63',
+    mainBg: '#faf9fe',
+  },
 };
 
 const t = componentTokens;

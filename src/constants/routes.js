@@ -14,6 +14,10 @@ export const ROUTES = {
   // Dashboard
   DASHBOARD: '/dashboard',
 
+  // Report
+  REPORT_REPORT: '/report/report',
+  REPORT_MONTHLY_SUMMARY: '/report/monthly-summary',
+
   // Profile
   PROFILE: '/profile',
   SETTINGS: '/settings',
