@@ -5,13 +5,15 @@
  * Functions accept IDs/slugs and return the full relative path.
  */
 export const endpoints = {
+  // Real backend contract (Spring Boot `UserController`) — see docs/auth-implementation.md.
+  // No refresh endpoint exists; `me` returns only { role, userSiteAccessDetails }, not a full
+  // profile (name/email only ever come back from `login`).
   auth: {
-    login: '/auth/login',
-    logout: '/auth/logout',
-    refresh: '/auth/refresh',
-    forgotPassword: '/auth/forgot-password',
-    resetPassword: '/auth/reset-password',
-    me: '/auth/me',
+    login: '/user/login',
+    logout: '/user/logout',
+    forgotPassword: '/user/forgot',
+    resetPassword: '/user/resetnow',
+    me: '/user/dtls',
   },
 
   users: {

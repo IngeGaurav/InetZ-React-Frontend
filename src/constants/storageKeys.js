@@ -3,9 +3,12 @@
  * Prevents key collisions and makes a future namespace prefix change trivial.
  */
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN: import.meta.env.VITE_AUTH_TOKEN_KEY || 'app_access_token',
-  REFRESH_TOKEN: import.meta.env.VITE_AUTH_REFRESH_TOKEN_KEY || 'app_refresh_token',
-  USER: 'app_user',
+  // Auth keys live in sessionStorage (tab-scoped), matching the Angular app's session model —
+  // see docs/auth-implementation.md. TOKEN mirrors Angular's literal 'token' key so the two
+  // apps are easy to cross-check in DevTools during the migration.
+  TOKEN: 'token',
+  USER: 'auth_user',
+
   THEME: 'app_theme',
   SIDEBAR_COLLAPSED: 'app_sidebar_collapsed',
   USER_PREFERENCES: 'app_user_preferences',

@@ -68,23 +68,11 @@ const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           { path: ROUTES.DASHBOARD, element: wrap(DashboardPage) },
+          { path: ROUTES.REPORT_REPORT, element: wrap(AnnualReportPage) },
+          { path: ROUTES.REPORT_MONTHLY_SUMMARY, element: wrap(MonthlySummaryPage) },
           // Add more protected routes here as features grow
         ],
       },
-    ],
-  },
-
-  // ── TEMPORARY — public, unauthenticated (sidebar/topbar dev preview) ──
-  // TODO: move REPORT_REPORT / REPORT_MONTHLY_SUMMARY back under the <ProtectedRoute>
-  // block above once real auth is wired up. Angular gates these same routes behind a
-  // logged-in session (see main-layout guard in the Angular app) — this app should match
-  // that once login is functional; this block only exists so the shell can be viewed
-  // without a backend login round-trip.
-  {
-    element: <DashboardLayout />,
-    children: [
-      { path: ROUTES.REPORT_REPORT, element: wrap(AnnualReportPage) },
-      { path: ROUTES.REPORT_MONTHLY_SUMMARY, element: wrap(MonthlySummaryPage) },
     ],
   },
 

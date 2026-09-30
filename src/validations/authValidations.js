@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import { emailSchema, passwordSchema } from './commonValidations';
 
+// Real backend takes { userName, password } — not email. See docs/auth-implementation.md.
 export const loginSchema = z.object({
-  email: emailSchema,
+  userName: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password is required'),
-  rememberMe: z.boolean().optional().default(false),
 });
 
 export const forgotPasswordSchema = z.object({

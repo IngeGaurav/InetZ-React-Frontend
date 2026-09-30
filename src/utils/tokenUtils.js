@@ -1,48 +1,33 @@
-import { storage } from './storageUtils';
+import { sessionStorage_ } from './storageUtils';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 /**
  * Token management utilities.
  *
- * WHY localStorage over httpOnly cookies here?
- * Cookies require server-side configuration (SameSite, Secure, etc.) and
- * aren't accessible from JS for manual injection into Authorization headers.
- * This app manages tokens client-side. If your backend supports httpOnly
- * refresh tokens, move refreshToken to a cookie and only keep accessToken here.
+ * The backend issues a single JWT with a fixed 5-hour expiry and NO refresh
+ * mechanism at all (see docs/auth-implementation.md) — there is deliberately
+ * no refresh-token handling here to mirror that contract. Stored in
+ * sessionStorage (not localStorage) to match the Angular app's tab-scoped
+ * session model.
  *
- * XSS RISK: Any token in localStorage is readable by JS. Mitigate with:
+ * XSS RISK: Any token in sessionStorage is readable by JS. Mitigate with:
  *   1. Strict CSP (see index.html comments)
  *   2. Input sanitization (DOMPurify for user-supplied HTML)
- *   3. Short access token TTL + refresh token rotation
+ * This is an interim measure — revisit if the backend auth revamp adds
+ * httpOnly cookie-based sessions.
  */
 
 export const tokenUtils = {
-  getAccessToken() {
-    return storage.get(STORAGE_KEYS.ACCESS_TOKEN);
+  getToken() {
+    return sessionStorage_.get(STORAGE_KEYS.TOKEN);
   },
 
-  setAccessToken(token) {
-    storage.set(STORAGE_KEYS.ACCESS_TOKEN, token);
+  setToken(token) {
+    sessionStorage_.set(STORAGE_KEYS.TOKEN, token);
   },
 
-  getRefreshToken() {
-    return storage.get(STORAGE_KEYS.REFRESH_TOKEN);
-  },
-
-  setRefreshToken(token) {
-    storage.set(STORAGE_KEYS.REFRESH_TOKEN, token);
-  },
-
-  setTokens({ accessToken, refreshToken }) {
-    this.setAccessToken(accessToken);
-    if (refreshToken) {
-      this.setRefreshToken(refreshToken);
-    }
-  },
-
-  clearTokens() {
-    storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
-    storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
+  clearToken() {
+    sessionStorage_.remove(STORAGE_KEYS.TOKEN);
   },
 
   /** Decode a JWT payload WITHOUT verification (client-side only). */
@@ -64,8 +49,8 @@ export const tokenUtils = {
     return Date.now() >= payload.exp * 1000;
   },
 
-  isAccessTokenExpired() {
-    const token = this.getAccessToken();
+  isTokenExpired() {
+    const token = this.getToken();
     if (!token) {
       return true;
     }

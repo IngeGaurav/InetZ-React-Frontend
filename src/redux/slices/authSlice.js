@@ -1,21 +1,24 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { tokenUtils } from '@/utils/tokenUtils';
-import { storage } from '@/utils/storageUtils';
+import { sessionStorage_ } from '@/utils/storageUtils';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 /**
  * Auth slice — stores identity, not credentials.
  *
- * The JWT itself lives in localStorage (managed by tokenUtils).
- * Redux holds the decoded user identity so any component can read
- * isAuthenticated / user / roles without touching localStorage.
+ * The JWT itself lives in sessionStorage (managed by tokenUtils). Redux holds
+ * the decoded user identity so any component can read isAuthenticated / user /
+ * role without touching sessionStorage directly.
  *
- * On hard refresh, rehydrate from the stored token via initialState.
+ * `user` is whatever the backend's login response returns under `data`
+ * (userName, id, role, userSiteAccessDetails) — see docs/auth-implementation.md.
+ * There is no separate refresh token: on hard refresh, rehydrate from the
+ * stored token + user only if the token hasn't expired yet.
  */
 
 const rehydrateFromStorage = () => {
-  const token = tokenUtils.getAccessToken();
-  const user = storage.get(STORAGE_KEYS.USER);
+  const token = tokenUtils.getToken();
+  const user = sessionStorage_.get(STORAGE_KEYS.USER);
   if (token && user && !tokenUtils.isExpired(token)) {
     return { isAuthenticated: true, user, token };
   }
@@ -33,18 +36,18 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials(state, action) {
-      const { user, accessToken, refreshToken } = action.payload;
+      const { user, token } = action.payload;
       state.isAuthenticated = true;
       state.user = user;
-      state.token = accessToken;
+      state.token = token;
       state.error = null;
-      tokenUtils.setTokens({ accessToken, refreshToken });
-      storage.set(STORAGE_KEYS.USER, user);
+      tokenUtils.setToken(token);
+      sessionStorage_.set(STORAGE_KEYS.USER, user);
     },
 
     updateUser(state, action) {
       state.user = { ...state.user, ...action.payload };
-      storage.set(STORAGE_KEYS.USER, state.user);
+      sessionStorage_.set(STORAGE_KEYS.USER, state.user);
     },
 
     logout(state) {
@@ -52,8 +55,8 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.error = null;
-      tokenUtils.clearTokens();
-      storage.remove(STORAGE_KEYS.USER);
+      tokenUtils.clearToken();
+      sessionStorage_.remove(STORAGE_KEYS.USER);
     },
 
     setAuthLoading(state, action) {
@@ -80,5 +83,6 @@ export const selectCurrentUser = (state) => state.auth.user;
 export const selectAuthLoading = (state) => state.auth.isLoading;
 export const selectAuthError = (state) => state.auth.error;
 export const selectUserRole = (state) => state.auth.user?.role;
+export const selectUserSiteAccess = (state) => state.auth.user?.userSiteAccessDetails;
 
 export default authSlice.reducer;

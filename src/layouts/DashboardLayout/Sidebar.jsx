@@ -59,20 +59,20 @@ const Sidebar = () => {
               boxShadow: '0 2px 6px rgba(0,0,0,0.28)',
             }}
           >
-            {initials(user?.name ?? '') || 'U'}
+            {initials(user?.userName ?? '') || 'U'}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
             <Typography
               noWrap
               sx={{ fontFamily: t.font.ui, fontWeight: 700, fontSize: '12px', color: '#FFF' }}
             >
-              {user?.name ?? 'User'}
+              {user?.userName ?? 'User'}
             </Typography>
             <Typography
               noWrap
               sx={{ fontFamily: t.font.body, fontSize: '10px', color: 'rgba(255,255,255,0.72)' }}
             >
-              {user?.email ?? ''}
+              {user?.role ?? ''}
             </Typography>
           </Box>
         </Box>

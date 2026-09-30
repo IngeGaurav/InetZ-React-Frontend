@@ -1,77 +1,110 @@
-import { useForm, FormProvider } from 'react-hook-form';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from 'react-router-dom';
-import { toast } from 'sonner';
+import { Link as RouterLink } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+import Link from '@mui/material/Link';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
 import { PageTitle } from '@/components/common/PageTitle/PageTitle';
-import { FormInput } from '@/components/forms/FormInput/FormInput';
-import { FormPassword } from '@/components/forms/FormPassword/FormPassword';
-import { FormCheckbox } from '@/components/forms/FormCheckbox/FormCheckbox';
-import { Button } from '@/components/ui/button';
+import { EyeIcon } from '@/components/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { loginSchema } from '@/validations/authValidations';
 import { ROUTES } from '@/constants/routes';
-import { getApiErrorMessage } from '@/api/helpers';
-import styles from './LoginPage.module.css';
 
 const LoginPage = () => {
   const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [formError, setFormError] = useState('');
 
-  const methods = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '', rememberMe: false },
+    defaultValues: { userName: '', password: '' },
     mode: 'onTouched',
   });
 
-  const {
-    handleSubmit,
-    formState: { isSubmitting },
-  } = methods;
-
   const onSubmit = async (data) => {
+    setFormError('');
     try {
       await login(data);
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      setFormError(err.message);
     }
   };
 
   return (
     <>
       <PageTitle title="Sign In" />
-      <div className={styles.container}>
-        <div className={styles.heading}>
-          <h2 className={styles.title}>Welcome back</h2>
-          <p className={styles.subtitle}>Sign in to your account to continue</p>
-        </div>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Box>
+          <Typography variant="h2">Welcome back</Typography>
+          <Typography variant="body2" sx={{ mt: 0.5 }}>
+            Sign in to your account to continue
+          </Typography>
+        </Box>
 
-        <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className={styles.form} noValidate>
-            <FormInput
-              name="email"
-              label="Email address"
-              type="email"
-              placeholder="you@company.com"
-              required
-              autoComplete="email"
-            />
-            <FormPassword
-              name="password"
+        {formError && <Alert severity="error">{formError}</Alert>}
+
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+        >
+          <TextField
+            label="Username"
+            autoComplete="username"
+            autoFocus
+            error={!!errors.userName}
+            helperText={errors.userName?.message}
+            {...register('userName')}
+          />
+
+          <Box>
+            <TextField
               label="Password"
-              placeholder="Enter your password"
-              required
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              error={!!errors.password}
+              helperText={errors.password?.message}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        tabIndex={-1}
+                      >
+                        <EyeIcon size={16} />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              {...register('password')}
             />
-            <div className={styles.formRow}>
-              <FormCheckbox name="rememberMe" label="Remember me" />
-              <Link to={ROUTES.FORGOT_PASSWORD} className={styles.forgotLink}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+              <Link component={RouterLink} to={ROUTES.FORGOT_PASSWORD} variant="body2">
                 Forgot password?
               </Link>
-            </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Signing in…' : 'Sign in'}
-            </Button>
-          </form>
-        </FormProvider>
-      </div>
+            </Box>
+          </Box>
+
+          <Button type="submit" fullWidth disabled={isSubmitting}>
+            {isSubmitting ? 'Signing in…' : 'Sign in'}
+          </Button>
+        </Box>
+      </Box>
     </>
   );
 };

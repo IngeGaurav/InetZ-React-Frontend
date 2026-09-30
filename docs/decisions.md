@@ -2,6 +2,53 @@
 
 Dated log of decisions that future sessions need to know about but that don't belong in code comments. Newest first.
 
+## 2026-09-29 — Real login/logout implemented against the current (interim) backend contract
+
+**What happened:** the user asked for login/logout to actually work, matching Angular's real
+auth mechanism (not the scaffold's invented `/auth/*` access/refresh-token pattern), and for
+`/report/report` + `/report/monthly-summary` to go back behind route protection (they'd been
+made temporarily public in the prior sidebar/topbar session so the shell could be previewed
+without a backend round-trip — see that entry below).
+
+**What was built:** full detail lives in `docs/auth-implementation.md` (read that before touching
+any auth code) — short version:
+- Storage switched from `localStorage` to `sessionStorage` (tab-scoped, matching Angular), token
+  key literally named `token` to match Angular's for easy cross-app DevTools comparison.
+- `src/api/axios.js` / `endpoints.js` / `authService.js` repointed at the real endpoints
+  (`/user/login`, `/user/logout` (DELETE), `/user/forgot`, `/user/dtls`) and stripped of the
+  refresh-token machinery the scaffold had (mutex/retry-queue, `/auth/refresh` call) — there is
+  no refresh token on this backend, so that code was deleted, not just unused.
+- `useAuth().login()` hand-checks the response body's own `status` field, because
+  `POST /user/login` **always returns HTTP 200** even on bad credentials — the real result is
+  `{ status: 200|401|409, data }` inside a 200 response. This is the one quirk most likely to get
+  silently broken by a future "cleanup" — see the doc for why.
+- `authSlice`'s `user` shape is now `{ userName, id, role, userSiteAccessDetails }` — matching
+  what the backend actually returns. There's no `name` or `email` field (backend doesn't have
+  one), so `Sidebar.jsx`'s profile block and `DashboardPage.jsx`'s greeting were updated to use
+  `user.userName`, and the sidebar's second profile line now shows `user.role` instead of a
+  nonexistent email.
+- `LoginPage.jsx` was rebuilt in MUI (`TextField`/`Button`/`Alert`, all picking up styling from
+  `muiTheme.js` with no extra overrides needed) per explicit request, replacing the old
+  shadcn/react-hook-form-wrapper version. `AuthLayout.jsx` (the split-panel wrapper Login and
+  Forgot-Password both render inside) was rebuilt alongside it in MUI too, now showing the real
+  iNetZ logo instead of a hardcoded "Ienerz" text wordmark. `ForgotPasswordPage.jsx` was
+  deliberately **not** rebuilt — it's wired to the real `/user/forgot` endpoint (works), but its
+  UI is still the old scaffold; out of scope for this pass (login only, per the request).
+- `ROUTES.REPORT_REPORT` / `ROUTES.REPORT_MONTHLY_SUMMARY` moved back under `<ProtectedRoute>` in
+  `src/routes/index.jsx`, removing the temporary public route block from the prior session.
+
+**Explicitly deferred (see `docs/auth-implementation.md` for the full list):** no refresh token
+(none exists), no role-based route/UI gating (selectors/helpers exist and work but nothing calls
+them yet — neither does Angular, server-side), no 10-minute inactivity auto-logout, no 9-second
+role-polling. These are real Angular behaviors that were consciously not ported — don't add them
+speculatively; do them as their own piece of work if the product asks for them.
+
+**How to apply:** before changing anything auth-related, read `docs/auth-implementation.md`
+first — it has the endpoint table, the exact quirk to preserve, and a "when the backend team
+upgrades auth" checklist of files to revisit.
+
+## 2026-09-29 — App shell (sidebar + topbar) built from a decoded reference mockup; Angular supplies nav content
+
 ## 2026-09-29 — App shell (sidebar + topbar) built from a decoded reference mockup; Angular supplies nav content
 
 **What happened:** the user supplied a "SideBar and TopBar.html" mockup to copy the CSS from, plus an instruction to take the sidebar/topbar *content* from the Angular app (`D:\InetZ\InetZ Frontend\InetZ-Frontend`). The mockup file is a self-executing "bundler" artifact (`<script type="__bundler/manifest">` of base64+gzip blobs unpacked into blob URLs at runtime) — the actual `<ienerz-shell>` web-component implementation (CSS, DOM template, behavior) is not present as plain text anywhere in the file; it's inside one opaque compressed JS asset in the manifest. A first pass at reading the file (before a context compaction) missed this and nearly proceeded on the mistaken belief that no more CSS than the page background/link colors was recoverable.

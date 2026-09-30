@@ -97,7 +97,7 @@ const DashboardPage = () => {
           <div>
             <h1 className={styles.pageTitle}>Dashboard</h1>
             <p className={styles.pageSubtitle}>
-              Welcome back, {user?.name}. Here's what's happening.
+              Welcome back, {user?.userName}. Here's what's happening.
             </p>
           </div>
         </div>

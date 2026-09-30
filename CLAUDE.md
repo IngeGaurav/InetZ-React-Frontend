@@ -2,11 +2,17 @@
 
 ## Before working on auth or any backend-calling code
 
-Read `docs/backend-context.md` first. It has the real backend API contract (Spring Boot, `/api/v1`, non-standard login response shape, no refresh token, etc.) reverse-engineered from the existing Angular app + backend source.
+Read `docs/auth-implementation.md` first — it documents what's actually **built** (login/logout,
+route protection, storage, the login response-shape quirk, and an explicit list of what's
+deliberately NOT implemented yet: no refresh token, no role gating, no inactivity auto-logout,
+no role polling). `docs/backend-context.md` is the underlying research doc it was built from
+(reverse-engineered from the Angular app + backend source) — read it for the "why", not the
+"what's implemented".
 
-**Known scaffold/reality mismatch:** `authService.js`, `axios.js`, and `endpoints.js` currently reference `/auth/login`, `/auth/refresh`, `/auth/me` — these endpoints do not exist on the real backend. The real login endpoint is `POST /api/v1/user/login`. Do not build against the scaffold's assumed endpoints without checking `docs/backend-context.md` first.
-
-The backend auth will be revamped later; until then, match the *current* Angular/backend contract exactly rather than a generic access/refresh-token pattern — this is a deliberate interim choice, not an oversight.
+The backend auth will be revamped later; until then, match the *current* Angular/backend contract
+exactly rather than a generic access/refresh-token pattern — this is a deliberate interim choice,
+not an oversight. Don't extend the auth implementation beyond matching that contract (e.g. don't
+add refresh-token handling "for later" — there isn't one today).
 
 For full route-level and controller-level detail beyond the condensed handoff, see `D:\InetZ\ANGULAR_TO_REACT_MIGRATION_ANALYSIS.md` (one directory above this repo).
 

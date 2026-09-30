@@ -31,11 +31,30 @@ export const useAuth = () => {
   const error = useSelector(selectAuthError);
   const role = useSelector(selectUserRole);
 
-  const login = async (credentials) => {
-    const data = await authService.login(credentials);
-    dispatch(setCredentials(data));
-    toast.success(`Welcome back, ${data.user.name}!`);
-    navigate(ROUTES.DASHBOARD);
+  // Backend quirk (see docs/auth-implementation.md): POST /user/login always responds
+  // HTTP 200 — even on bad credentials or a throttled duplicate session — so axios never
+  // rejects here. The real result lives in the body's own `status` field (200/401/409),
+  // which this function has to check by hand.
+  const login = async ({ userName, password }) => {
+    const response = await authService.login({ userName, password });
+
+    if (response.status === 200 && response.data && response.data !== 'unauthorised') {
+      const { userName: name, token, id, role: userRole, userSiteAccessDetails } = response.data;
+      dispatch(
+        setCredentials({
+          user: { userName: name, id, role: userRole, userSiteAccessDetails },
+          token,
+        })
+      );
+      toast.success(`Welcome back, ${name}!`);
+      navigate(ROUTES.DASHBOARD);
+      return;
+    }
+
+    if (response.status === 409) {
+      throw new Error('You already have another session active.');
+    }
+    throw new Error('Invalid username or password. Please try again.');
   };
 
   const logout = async () => {
