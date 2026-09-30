@@ -81,6 +81,8 @@ export const componentTokens = {
     chip: '#E9E2D9',
     pager: '#EDE6DC',
     disabled: '#EDE6DC',
+    field: '#EDE6DC', // read-only field border (same value as `pager`, named for that use)
+    tableDivider: '#E5DDD0', // vertical rule between grouped table columns
   },
   semantic: {
     success: '#34A853',
@@ -140,6 +142,24 @@ export const componentTokens = {
     railWidth: 165,
     railActiveBg: '#796F63',
     mainBg: '#faf9fe',
+  },
+  // Extra tones the GHG Report design handoff introduced (2026-09-30) with no existing match
+  // above — used by the shared custom-built controls in src/components/common/ (Dropdown,
+  // YearPicker, AppTabs, TonalButton, FieldTrigger) plus this report page's own Card/icon tiles.
+  // Centralized here (not left as literals in those components) for the same reason every other
+  // group in this file is: one place to change a value, one place to check for drift.
+  chrome: {
+    navBg: '#F7F3EC', // YearPicker prev/next button background
+    navBgHover: '#EFE8DD', // YearPicker prev/next button hover background
+    navIcon: '#6E6E6E', // YearPicker prev/next chevron color
+    iconAccent: '#B08A5E', // muted icon accent (dropdown/year-picker chevron, calendar icon)
+    disabledText: '#D5CFC6', // YearPicker: year outside the selectable range
+    mutedBadgeText: '#A59F95', // AppSegmentedTabs: unselected pill number badge
+    tonalHover: '#F9DDBE', // TonalButton / tinted icon-button hover background
+    tintIconBorderHover: '#F2C999', // tinted icon-button hover border
+    iconTileBg: '#FBEBD9', // warm icon-tile background (report header icon, Card letter badge)
+    cardHeaderBorder: '#F2EEE7', // Card's title-row bottom border
+    pageBaseText: '#3A3A3A', // GHG Report page root text color
   },
 };
 

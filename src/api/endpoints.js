@@ -29,4 +29,24 @@ export const endpoints = {
     stats: '/dashboard/stats',
     recentActivity: '/dashboard/recent-activity',
   },
+
+  // Real backend contract (Spring Boot `DecarbController`/`EmissionsController`/`OutPutController`)
+  // — see D:\InetZ\DECARB_REPORT_ANALYSIS.md for the full trace. All wrapped in the same
+  // `{ status, data }` envelope as auth (see docs/auth-implementation.md) — unwrap with
+  // `unwrapReportResponse` in reportService.js, don't assume axios's HTTP status alone.
+  general: {
+    dropdown: '/general/dropdown', // ?type=&tabName=
+    organisation: '/general/organisation',
+    orgChart: '/general/orgChart',
+  },
+
+  emissions: {
+    site: '/emissions/site',
+  },
+
+  output: {
+    reportBaseYearScopeValues: '/output/getReportBaseYearScopeValues',
+    reportEmissionYearScopeValues: '/output/getReportEmisisoYearScopeValues', // ?year=
+    outputEmissions: (siteId) => `/output/organisation/outputEmissions/${siteId}`, // ?year=
+  },
 };

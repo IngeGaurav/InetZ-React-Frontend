@@ -2,6 +2,91 @@
 
 Dated log of decisions that future sessions need to know about but that don't belong in code comments. Newest first.
 
+## 2026-09-30 — Audited the GHG Report components for hardcoded colors outside componentTokens; added `componentTokens.chrome`
+
+**What happened:** after promoting `Dropdown`/`YearPicker`/`AppTabs`/`TonalButton`/`FieldTrigger`
+to `src/components/common/` (see the entry below), the user asked directly whether any color/font
+in these — or the report page itself — was bypassing `componentTokens` (`muiTheme.js`), since the
+whole point of moving them was app-wide consistency. A full grep for literal hex values across
+`src/pages/report/` and the new shared components turned up two categories of problem:
+
+1. **A real mapping bug**: `ghgReportTheme.js`'s `C.borderSoft` pointed at `componentTokens.border.divider`
+   (`#F0EBE3`) with a comment claiming it equaled `#F5F1EB` — it doesn't; `border.row` is the
+   token that actually equals `#F5F1EB`. Wrong value silently in use since the design was first
+   ported. Fixed.
+2. **~20 literal hex values** the port carried over unchanged from the design handoff's own `C`
+   object, never cross-checked against `componentTokens` individually (only the *first* pass's
+   handful of values got that treatment — see the entry below). Some were exact-match duplicates
+   of existing tokens used as raw hex instead of a reference (`#EFE8DF`→`border.menu`,
+   `#5A554E`→`text.muted`, `#FBF8F3`→`surface.hoverRow`, `#fff`→`surface.card`, `#F5F1EB`→`border.row`).
+   The rest had no existing match at all (nav-button tones, a muted icon accent, disabled-year
+   text, a card header border, the page's own root text color, etc.).
+
+**Fix:** added a new `componentTokens.chrome` section in `muiTheme.js` for the values with no
+existing match (each commented with what it's for), and replaced every literal hex in
+`src/pages/report/` and `src/components/common/{Dropdown,YearPicker,AppTabs,TonalButton,FieldTrigger}`
+with a `componentTokens`/`C` (the report page's local alias file) reference. `ghgReportTheme.js`'s
+header comment now explains `C` is just readability aliasing — the shared components under
+`src/components/common/` import `componentTokens` directly and don't depend on this file at all.
+
+**How to apply:** when porting a design handoff's own color object (like this GHG Report one, or
+any future one), don't stop at "the values that were obviously reusable" — grep the finished
+component files for `#[0-9A-Fa-f]{3,6}` afterward and check every hit against `componentTokens`,
+not just the ones that happened to look familiar during the port. A value with no existing match
+still belongs in `muiTheme.js` (a clearly-labeled new section is fine, as `chrome` is here) rather
+than staying a page-local literal — the goal is that `componentTokens` stays the single place to
+look for "is this color already in the palette," not something sessions have to partially
+reconstruct by reading component files.
+
+## 2026-09-30 — GHG Report visual layer rebuilt from an approved design handoff, replacing a first-pass generic-MUI version
+
+## 2026-09-30 — GHG Report visual layer rebuilt from an approved design handoff, replacing a first-pass generic-MUI version
+
+**What happened:** the first Annual Report (`/report/report`) implementation (see the
+2026-09-29 entry below) reproduced Angular's functionality correctly but styled it with plain,
+generic MUI `Card`/`Table` components — a defensible reading of "use the existing design system"
+for an unstyled migration task, but the user judged it "not looking professional" for a
+production app. Rather than have Claude freehand a second attempt at "better," the user supplied
+an actual approved design handoff — a Claude-generated design (`GHGReport.jsx` + `ghgData.js` +
+a static HTML reference), pixel-accurate to specific colors/sizes/spacing, with its own already-
+designed dropdown, tab, and year-picker components — and asked for it to be ported accurately
+with real API data appended in place of its mocks.
+
+**What was built:** see `docs/DECARB_REPORT_ANALYSIS.md`'s A.6 "Visual layer" section for the
+full breakdown. Short version: `useAnnualReportData.js` (data-fetching + Angular business-logic
+port, bugs and all) was **not touched** — only the rendering layer changed. New files:
+`ghgReportTheme.js` (color/font tokens, cross-checked against `componentTokens` — nearly every
+hex in the handoff turned out to already have an exact-match token in this project's theme),
+`components/GhgPrimitives.jsx` (custom `ReadField`/`Card`/`MainTabs`/`SubTabs`/`SiteSelect`/
+`YearPicker`, built with `ButtonBase`+`Popover` per the handoff's own design rather than
+restyled MUI `Select`/`Tabs`), `components/ExpandableTable.jsx` (the one tree-table component
+that now powers the Facilities table and all three emissions tables), and `reportAdapters.js`
+(pure shape-translation from the real data to what `ExpandableTable` expects — no business
+logic). The old generic `ReportSections.jsx`/`ScopeYearTable.jsx`/`OverallEmissionsTable.jsx`
+were deleted, fully superseded.
+
+**A real bug caught mid-port:** the handoff's `SubTabs` (used for Tab B's two sub-sections and
+Tab D's four) are interactive-only — only the active sub-tab exists in the DOM. The existing PDF/
+print machinery (a hidden full-report clone, forced to fully expand every tree table before
+`jsPDF`+`html2canvas` render it — see A.5) would have silently exported only whichever sub-tab
+happened to be selected on screen, dropping the rest of the report. Fixed by giving
+`BoundaryPanel`/`EmissionsPanel` a `forcePdf` mode that stacks every sub-section in full (with a
+new `PrintSubHeading` primitive) instead of using the `SubTabs` selector, only for the hidden
+clone instance.
+
+**How to apply:** when a design handoff like this arrives (a working `.jsx` + data file + static
+HTML reference, explicitly marked "production-ready" / "high fidelity"), treat it as the
+authoritative visual spec and port it close to verbatim rather than reinterpreting it — the
+earlier entry below (2026-09-28, MUI adoption) still governs when *no* such handoff exists.
+Cross-check its literal color hexes against `componentTokens` before assuming a new token is
+needed; this project's theme and this handoff turned out to already share almost every value.
+When a design's interactive components (tabs, accordions, sub-navigation) get reused inside a
+"export everything at once" flow (PDF, print, a "select all" view), check whether the design's
+own DOM-presence assumptions (only the active branch is mounted) will silently drop content in
+that flow — it won't show up as an error, just a quietly incomplete export.
+
+## 2026-09-29 — Real login/logout implemented against the current (interim) backend contract
+
 ## 2026-09-29 — Real login/logout implemented against the current (interim) backend contract
 
 **What happened:** the user asked for login/logout to actually work, matching Angular's real

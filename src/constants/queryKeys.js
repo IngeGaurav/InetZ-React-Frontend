@@ -34,6 +34,17 @@ export const queryKeys = {
     recentActivity: () => ['dashboard', 'recent-activity'],
   },
 
+  // Annual Report route (/report/report) — see D:\InetZ\DECARB_REPORT_ANALYSIS.md
+  report: {
+    dropdown: (type) => ['report', 'dropdown', type],
+    organisation: () => ['report', 'organisation'],
+    orgChart: () => ['report', 'org-chart'],
+    sites: () => ['report', 'sites'],
+    baseYearScopeValues: () => ['report', 'base-year-scope-values'],
+    emissionYearScopeValues: (year) => ['report', 'emission-year-scope-values', year],
+    outputEmissions: (siteId, year) => ['report', 'output-emissions', siteId, year],
+  },
+
   // Generic paginated list helper
   paginatedList: (entity, params) => [entity, 'list', params],
 };

@@ -33,6 +33,18 @@ Full component coverage (implemented vs. deferred) is tracked in `docs/design-sy
 
 **Existing shadcn/Radix components** (`src/components/ui/*`, `src/components/forms/*`) are legacy/superseded — kept, not deleted, but don't extend them for new work; use MUI instead.
 
+## Angular-to-React Migration Guidelines
+
+* The existing Angular implementation is the source of truth for current functionality and business logic.
+* When implementing a page in React, first inspect the corresponding Angular route, components, services, API calls, calculations, and UI behavior.
+* Reproduce the existing Angular functionality in React using the existing React design system, Material UI theme, reusable components, and established coding conventions.
+* Preserve existing backend API contracts and business logic. Do not introduce a redesign or change functionality unless explicitly requested.
+* Document existing bugs, technical debt, performance concerns, security risks, and potential improvements in the relevant analysis Markdown file.
+* Do not fix documented issues or perform unrelated refactoring during the initial functional-parity implementation. Address them in later stages after review and approval.
+* Maintain an implementation checklist and verify React behavior against the Angular implementation.
+
+First applied to `/report/report` (the "Annual Report" route) — see `D:\InetZ\DECARB_REPORT_ANALYSIS.md` for that route's full analysis, API trace, documented bugs/limitations (not fixed), and implementation-status checklist. One exception worth noting for future routes: this route's report tables use plain MUI `Table` components instead of MUI X DataGrid (see that doc's "Implementation notes" section for why — a fixed parent/child expand-tree with baked-in totals rows doesn't fit DataGrid's row model, and Angular's own implementation is a plain HTML table). The DataGrid rule above still applies by default; deviate only with the same kind of reasoning, not as a default escape hatch.
+
 ## Working across sessions
 
 This project is built up route-by-route across multiple Claude Code sessions. Sessions don't share memory automatically — durable, cross-session context belongs in this file and in `docs/`, not in any one conversation. When you learn something in a session that a future session (on this route or another) would need, write it here or add a doc under `docs/` and link it from this file.
