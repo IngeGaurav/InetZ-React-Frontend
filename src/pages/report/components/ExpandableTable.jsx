@@ -27,6 +27,7 @@ function ExpandableTable({
   defaultOpen = false,
   valueAlign = 'center',
   forceOpen = false,
+  hideToggleAll = false,
 }) {
   const [open, setOpen] = useState(() =>
     Object.fromEntries(rows.map((r) => [r.name, defaultOpen]))
@@ -60,7 +61,7 @@ function ExpandableTable({
   };
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      {!forceOpen && (
+      {!forceOpen && !hideToggleAll && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <TonalButton
             onClick={() => setOpen(Object.fromEntries(rows.map((r) => [r.name, !allOpen])))}

@@ -48,5 +48,6 @@ export const endpoints = {
     reportBaseYearScopeValues: '/output/getReportBaseYearScopeValues',
     reportEmissionYearScopeValues: '/output/getReportEmisisoYearScopeValues', // ?year=
     outputEmissions: (siteId) => `/output/organisation/outputEmissions/${siteId}`, // ?year=
+    monthlyReport: '/output/monthlyReport',
   },
 };

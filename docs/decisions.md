@@ -2,6 +2,54 @@
 
 Dated log of decisions that future sessions need to know about but that don't belong in code comments. Newest first.
 
+## 2026-09-30 — Monthly Summary visual layer rebuilt from an approved design handoff; MultiSelect promoted to shared components
+
+**What happened:** same pattern as the GHG Report's redesign earlier the same day — the first
+Monthly Summary implementation (built same-day, functional-parity port of Angular's
+`MonthlySummaryComponent`) made its own chart-color/chart-chrome calls since no design handoff
+existed yet. The user then supplied an approved handoff
+(`C:\Users\gpetkar\Desktop\report page code\MonthlyGHGSummary.jsx` + `monthlyGhgData.js`) and
+asked for it ported accurately, explicitly calling out two things: don't invent new colors (find
+the nearest existing token when the design's hex has no exact match) and don't touch the
+Highcharts series colors at all (chart-color review is a separate, later task).
+
+**What was built:** see `docs/MONTHLY_SUMMARY_ANALYSIS.md`'s "Visual layer" section for the full
+breakdown. `useMonthlySummaryData.js`/`monthlySummaryAdapters.js` were re-derived to match the
+handoff's data shapes (`period`/`overall`/`scopes`/`sites`/`plants`/`equipment`) but still source
+from the same real `output/monthlyReport` call — no backend contract change. New:
+`monthlySummaryTheme.js` (color/font token mapping — every hex resolved to an existing token
+except one chart-gridline color with no exact match, which uses the nearest existing token rather
+than a new literal), `components/monthlyChartOptions.js` (Highcharts option builders, chart
+*chrome* sourced through tokens but every value identical to the handoff's own literals — series
+colors passed through unchanged per instruction), `components/MonthlySummaryPrimitives.jsx`
+(Bullets/Legend/ChartHeader).
+
+**A real bug caught twice in one day**: `MultiSelect` (promoted to
+`src/components/common/MultiSelect/MultiSelect.jsx`, same "genuinely reusable, don't page-scope
+it" reasoning as `Dropdown`/`YearPicker`/`AppTabs`) initially used MUI's `MenuItem` inside a bare
+`Popover` — the exact same "MUI: MenuListContext is missing" crash already hit and fixed once
+this same day in the GHG Report's `SiteSelect`. Caught and fixed the same way (swap `MenuItem` for
+a plain `ButtonBase`) before it shipped, plus a full-codebase grep confirming no third instance
+exists. **Any future custom Popover-based menu/list in this app must use `ButtonBase`, never
+`MenuItem`, unless it's wrapped in a real `Menu`/`MenuList` (or `<Select>`/`<TextField select>`,
+which provide that context automatically)** — `MenuItem` has zero standalone rendering behavior
+outside that context; it doesn't fail quietly, it throws.
+
+**Sidebar/top bar**: the handoff ships its own `EmptySidebar`/`EmptyTopBar` placeholders (by
+design — handoffs are page-content-only). Neither is used; this page already renders inside the
+app's real `DashboardLayout` via routing, same as the Annual Report and every other `/report/**`
+page.
+
+**How to apply:** when a design handoff's color object doesn't have an exact match in
+`componentTokens`/`tokens.js`, default to the *nearest* existing token (documented inline, e.g.
+`monthlySummaryTheme.js`'s `grid` mapping) rather than extending the theme file — that's a
+narrower rule than the GHG Report pass the day before, which did add a few new tokens
+(`componentTokens.chrome`) for values with no close match at all. Ask which policy applies before
+assuming; this session's explicit instruction was "search for similar, don't invent," which reads
+as "prefer reuse over addition" even where a value isn't byte-identical.
+
+## 2026-09-30 — GHG Report visual layer rebuilt from an approved design handoff, replacing a first-pass generic-MUI version
+
 ## 2026-09-30 — Audited the GHG Report components for hardcoded colors outside componentTokens; added `componentTokens.chrome`
 
 **What happened:** after promoting `Dropdown`/`YearPicker`/`AppTabs`/`TonalButton`/`FieldTrigger`

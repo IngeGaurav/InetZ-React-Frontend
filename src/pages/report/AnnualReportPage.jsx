@@ -13,6 +13,7 @@ import { Dropdown } from '@/components/common/Dropdown/Dropdown';
 import { YearPicker } from '@/components/common/YearPicker/YearPicker';
 import { AppTabs, AppSegmentedTabs } from '@/components/common/AppTabs/AppTabs';
 import { TonalButton } from '@/components/common/TonalButton/TonalButton';
+import { Accordion } from '@/components/common/Accordion/Accordion';
 import { C, noto, dm, labelSx } from './ghgReportTheme';
 import {
   Svg,
@@ -84,32 +85,35 @@ function OrganizationalBoundaryBlock({
         label="Organizational boundary approach used for GHG inventory"
         value={orgDetails.boundy}
       />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: 820 }}>
-        <Box>
-          <Typography sx={labelSx}>
-            List of Facilities Included Under Selected Organizational Boundary
-          </Typography>
-          <Typography sx={{ fontFamily: noto, fontSize: 11, color: C.captionMuted }}>
-            List all of the organization-wide facilities included under the selected organizational
-            boundary and include the ownership status (owned or leased) for each facility.
-          </Typography>
-        </Box>
-        <ExpandableTable
-          firstCol="Facility"
-          childLabel="plants"
-          defaultOpen
-          minWidth={560}
-          colTemplate="minmax(220px,1.6fr) minmax(140px,1fr) minmax(120px,0.8fr)"
-          columns={[{ label: 'Type of Control' }, { label: 'Equity Share, %' }]}
-          rows={facilities}
+      <Box sx={{ maxWidth: 820 }}>
+        {/* Closed by default; once opened, every facility row is expanded (no "Collapse all" —
+            users close individual rows if they want to). */}
+        <Accordion
+          title="List of Facilities Included Under Selected Organizational Boundary"
+          description="List all of the organization-wide facilities included under the selected organizational boundary and include the ownership status (owned or leased) for each facility."
           forceOpen={forcePdf}
-        />
+        >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <ExpandableTable
+              firstCol="Facility"
+              childLabel="plants"
+              defaultOpen
+              hideToggleAll
+              minWidth={560}
+              colTemplate="minmax(220px,1.6fr) minmax(140px,1fr) minmax(120px,0.8fr)"
+              columns={[{ label: 'Type of Control' }, { label: 'Equity Share, %' }]}
+              rows={facilities}
+              forceOpen={forcePdf}
+            />
+            <EditableField
+              label="Have any facilities, operations and/or emissions sources been excluded from this inventory? If yes, please specify."
+              value={facilitiesText}
+              onChange={onFacilitiesTextChange}
+              maxWidth="none"
+            />
+          </Box>
+        </Accordion>
       </Box>
-      <EditableField
-        label="Have any facilities, operations and/or emissions sources been excluded from this inventory? If yes, please specify."
-        value={facilitiesText}
-        onChange={onFacilitiesTextChange}
-      />
     </>
   );
 }
@@ -148,50 +152,28 @@ function OperationalBoundaryBlock() {
 }
 
 function BoundaryPanel({ orgDetails, orgData, facilitiesText, onFacilitiesTextChange, forcePdf }) {
-  const [sub, setSub] = useState(0);
   const facilities = useMemo(() => orgDataToFacilities(orgData), [orgData]);
   if (!orgDetails) {
     return null;
   }
-  // PDF/print: stack both sub-sections in full, instead of showing only whichever sub-tab is
-  // active — the design handoff's sub-tabs are interactive-only and never had a "print all" mode.
-  if (forcePdf) {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '20px', p: '16px 18px 18px' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <PrintSubHeading index={1}>Organizational Boundary</PrintSubHeading>
-          <OrganizationalBoundaryBlock
-            orgDetails={orgDetails}
-            facilities={facilities}
-            facilitiesText={facilitiesText}
-            onFacilitiesTextChange={onFacilitiesTextChange}
-            forcePdf
-          />
-        </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <PrintSubHeading index={2}>Operational Boundary</PrintSubHeading>
-          <OperationalBoundaryBlock />
-        </Box>
-      </Box>
-    );
-  }
+  // Both sub-sections are stacked (Organizational, then Operational) on screen and in the
+  // PDF/print clone alike — no sub-tabs, so `forcePdf` only has to pin the accordion/table open.
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px', p: '16px 18px 18px' }}>
-      <AppSegmentedTabs
-        items={['Organizational Boundary', 'Operational Boundary']}
-        value={sub}
-        onChange={setSub}
-      />
-      {sub === 0 ? (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '28px', p: '18px 18px 22px' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <PrintSubHeading index={1}>Organizational Boundary</PrintSubHeading>
         <OrganizationalBoundaryBlock
           orgDetails={orgDetails}
           facilities={facilities}
           facilitiesText={facilitiesText}
           onFacilitiesTextChange={onFacilitiesTextChange}
+          forcePdf={forcePdf}
         />
-      ) : (
+      </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <PrintSubHeading index={2}>Operational Boundary</PrintSubHeading>
         <OperationalBoundaryBlock />
-      )}
+      </Box>
     </Box>
   );
 }
@@ -293,6 +275,7 @@ function EmissionsPanel({
       columns={gasColumns}
       rows={baseYearTree}
       colTemplate={gasTemplate}
+      hideToggleAll
       forceOpen={forcePdf}
     />
   );
@@ -303,6 +286,7 @@ function EmissionsPanel({
       columns={gasColumns}
       rows={emissionYearTree}
       colTemplate={gasTemplate}
+      hideToggleAll
       forceOpen={forcePdf}
     />
   );
@@ -311,6 +295,7 @@ function EmissionsPanel({
       firstCol="Site"
       childLabel="plants"
       minWidth={900}
+      hideToggleAll
       colTemplate="minmax(200px,1.5fr) repeat(6, minmax(104px,1fr))"
       groups={[
         { label: 'Direct emissions · Scope 1', span: 4 },
@@ -352,20 +337,36 @@ function EmissionsPanel({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px', p: '16px 18px 18px' }}>
+      {/* Two merged sub-tabs: (1) base year info + base year emissions, (2) selected-year
+          emissions + emissions by source type. */}
       <AppSegmentedTabs
-        items={[
-          'Base Year Information',
-          `Emission for Base Year ${orgDetails.baselineYear}`,
-          `Emission for Year ${selectedYear}`,
-          'Emissions by Source Type',
-        ]}
+        items={[`Base Year ${orgDetails.baselineYear}`, `Year ${selectedYear}`]}
         value={sub}
         onChange={setSub}
       />
-      {sub === 0 && baseYearInfoBlock}
-      {sub === 1 && baseYearTable}
-      {sub === 2 && emissionYearTable}
-      {sub === 3 && sourceTypeTable}
+      {sub === 0 && (
+        <>
+          {baseYearInfoBlock}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <PrintSubHeading index={1}>
+              Emission for Base Year {orgDetails.baselineYear}
+            </PrintSubHeading>
+            {baseYearTable}
+          </Box>
+        </>
+      )}
+      {sub === 1 && (
+        <>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <PrintSubHeading index={1}>Emission for Year {selectedYear}</PrintSubHeading>
+            {emissionYearTable}
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <PrintSubHeading index={2}>Emissions by Source Type</PrintSubHeading>
+            {sourceTypeTable}
+          </Box>
+        </>
+      )}
     </Box>
   );
 }
@@ -746,7 +747,8 @@ const AnnualReportPage = () => {
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '14px', pt: '14px', px: '4px' }}>
           <AppTabs tabs={APP_TABS_LIST} value={tab} onChange={setTab} />
-          <Card letter={TABS[tab].letter} title={TABS[tab].name}>
+          {/* No card heading on any tab — the tab bar above already names the section. */}
+          <Card letter={TABS[tab].letter} title={TABS[tab].name} hideHeader>
             {panel}
           </Card>
         </Box>

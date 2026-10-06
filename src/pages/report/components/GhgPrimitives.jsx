@@ -6,6 +6,8 @@
 // specific to this report's own layout (fields, the lettered-badge card, PDF sub-headings).
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { LockIcon, EditIcon } from '@/components/icons';
+import { componentTokens } from '@/theme';
 import { C, noto, dm, labelSx } from '../ghgReportTheme';
 
 /* ---------- icons ---------- */
@@ -27,6 +29,12 @@ export const Svg = ({ children, size = 16, sw = 2 }) => (
 );
 
 /* ---------- primitives ---------- */
+// Read-only vs editable fields are deliberately distinct: read-only (auto-filled from the
+// backend) stays on the tinted surface with a lock icon and no hover/focus affordance; editable
+// fields sit on a white surface with a stronger border, a pencil icon, a placeholder, and
+// orange hover/focus states — so users can tell at a glance where they can type.
+const fieldIconSx = { position: 'absolute', right: 12, display: 'flex', pointerEvents: 'none' };
+
 export function ReadField({ label, value, maxWidth = 620 }) {
   const empty = value === '' || value === null || value === undefined;
   return (
@@ -35,9 +43,12 @@ export function ReadField({ label, value, maxWidth = 620 }) {
         {label}
       </Typography>
       <Box
+        title="Auto-filled — read only"
         sx={{
+          position: 'relative',
           minHeight: 38,
-          px: '12px',
+          pl: '12px',
+          pr: '36px',
           py: '8px',
           display: 'flex',
           alignItems: 'center',
@@ -48,83 +59,108 @@ export function ReadField({ label, value, maxWidth = 620 }) {
           fontSize: 12.5,
           fontWeight: 600,
           color: empty ? C.empty : C.body,
+          cursor: 'default',
+          userSelect: 'text',
         }}
       >
         {empty ? '—' : value}
+        <Box sx={{ ...fieldIconSx, color: C.empty }}>
+          <LockIcon size={14} />
+        </Box>
       </Box>
     </Box>
   );
 }
 
-// Same visual shell as ReadField, but a real editable control — for the handful of fields that
-// are genuinely editable, unsaved component state in Angular too (facilitiesText,
-// clarificationOfCompany, contextForAnySignificant — see DECARB_REPORT_ANALYSIS.md). The design
-// handoff's ReadField has no editable variant since none of its screens needed one.
-export function EditableField({ label, value, onChange, maxWidth = 620, multiline = false }) {
+// A real editable control — for the handful of fields that are genuinely editable, unsaved
+// component state in Angular too (facilitiesText, clarificationOfCompany,
+// contextForAnySignificant — see DECARB_REPORT_ANALYSIS.md).
+export function EditableField({
+  label,
+  value,
+  onChange,
+  maxWidth = 620,
+  multiline = false,
+  placeholder = 'Click to add…',
+}) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth }}>
-      <Typography component="label" sx={labelSx}>
-        {label}
-      </Typography>
-      <Box
-        component={multiline ? 'textarea' : 'input'}
-        value={value ?? ''}
-        onChange={(e) => onChange(e.target.value)}
-        rows={multiline ? 2 : undefined}
-        sx={{
-          minHeight: 38,
-          px: '12px',
-          py: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          borderRadius: '8px',
-          border: `1.5px solid ${C.fieldBorder}`,
-          bgcolor: C.fieldBg,
-          fontFamily: noto,
-          fontSize: 12.5,
-          fontWeight: 600,
-          color: C.body,
-          outline: 'none',
-          resize: multiline ? 'vertical' : 'none',
-          width: '100%',
-          '&:focus': { borderColor: C.orange },
-        }}
-      />
+      {label && (
+        <Typography component="label" sx={labelSx}>
+          {label}
+        </Typography>
+      )}
+      <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        <Box
+          component={multiline ? 'textarea' : 'input'}
+          value={value ?? ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={multiline ? 2 : undefined}
+          sx={{
+            minHeight: 38,
+            pl: '12px',
+            pr: '36px',
+            py: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: '8px',
+            border: `1.5px solid ${C.divider}`,
+            bgcolor: C.white,
+            fontFamily: noto,
+            fontSize: 12.5,
+            fontWeight: 600,
+            color: C.ink,
+            outline: 'none',
+            resize: multiline ? 'vertical' : 'none',
+            width: '100%',
+            cursor: 'text',
+            transition: 'border-color .15s, box-shadow .15s',
+            '&::placeholder': { color: C.faint, fontWeight: 500 },
+            '&:hover': { borderColor: C.orange },
+            '&:focus': { borderColor: C.orange, boxShadow: componentTokens.shadow.focusInput },
+          }}
+        />
+        <Box sx={{ ...fieldIconSx, color: C.orangeDeep }}>
+          <EditIcon size={14} />
+        </Box>
+      </Box>
     </Box>
   );
 }
 
-// Heading used only inside the hidden PDF/print clone, where sub-tabbed panels (Boundary,
-// Emissions) render every sub-section stacked instead of just the active one — see
-// AnnualReportPage.jsx's `forcePdf` branches. Not part of the design handoff (its screens are
-// interactive-only), styled to sit quietly above an ExpandableTable/field group.
+// Numbered sub-section heading (badge + title + trailing hairline). Used on screen for stacked
+// sub-sections (Boundary: Organizational / Operational) and in the hidden PDF/print clone for
+// panels that still use sub-tabs on screen (Emissions) — see AnnualReportPage.jsx.
 export function PrintSubHeading({ index, children }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
       <Box
         sx={{
-          width: 18,
-          height: 18,
-          borderRadius: '5px',
+          width: 24,
+          height: 24,
+          borderRadius: '7px',
           display: 'grid',
           placeItems: 'center',
-          fontSize: 10,
+          fontSize: 11.5,
           fontWeight: 800,
           bgcolor: C.tint,
+          border: `1px solid ${C.tintBorder}`,
           color: C.tintText,
           flex: 'none',
         }}
       >
         {index}
       </Box>
-      <Typography sx={{ fontFamily: dm, fontSize: 12.5, fontWeight: 800, color: C.ink }}>
+      <Typography sx={{ fontFamily: dm, fontSize: 14, fontWeight: 800, color: C.ink }}>
         {children}
       </Typography>
+      <Box sx={{ flex: 1, height: '1px', bgcolor: C.borderSoft }} />
     </Box>
   );
 }
 
-export function Card({ letter, title, children }) {
+export function Card({ letter, title, hideHeader = false, children }) {
   return (
     <Box
       sx={{
@@ -134,36 +170,38 @@ export function Card({ letter, title, children }) {
         boxShadow: '0 1px 3px rgba(0,0,0,0.03), 0 6px 16px rgba(60,40,20,0.04)',
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          px: '18px',
-          py: '14px',
-          borderBottom: `1px solid ${C.cardHeaderBorder}`,
-        }}
-      >
+      {!hideHeader && (
         <Box
           sx={{
-            width: 30,
-            height: 30,
-            borderRadius: '8px',
-            bgcolor: C.iconTileBg,
-            border: `1px solid ${C.tintBorder}`,
-            color: C.orangeDeep,
-            display: 'grid',
-            placeItems: 'center',
-            fontSize: 13,
-            fontWeight: 800,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            px: '18px',
+            py: '14px',
+            borderBottom: `1px solid ${C.cardHeaderBorder}`,
           }}
         >
-          {letter}
+          <Box
+            sx={{
+              width: 30,
+              height: 30,
+              borderRadius: '8px',
+              bgcolor: C.iconTileBg,
+              border: `1px solid ${C.tintBorder}`,
+              color: C.orangeDeep,
+              display: 'grid',
+              placeItems: 'center',
+              fontSize: 13,
+              fontWeight: 800,
+            }}
+          >
+            {letter}
+          </Box>
+          <Typography sx={{ fontFamily: dm, fontSize: 14, fontWeight: 800, color: C.ink }}>
+            {title}
+          </Typography>
         </Box>
-        <Typography sx={{ fontFamily: dm, fontSize: 14, fontWeight: 800, color: C.ink }}>
-          {title}
-        </Typography>
-      </Box>
+      )}
       {children}
     </Box>
   );

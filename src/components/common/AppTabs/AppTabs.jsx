@@ -66,16 +66,18 @@ const AppTabs = ({ tabs, value, onChange }) => (
 
 const AppSegmentedTabs = ({ items, value, onChange }) => (
   <Box
+    role="tablist"
     sx={{
       display: 'inline-flex',
       flexWrap: 'wrap',
       maxWidth: '100%',
       alignSelf: 'flex-start',
-      gap: '2px',
-      p: '3px',
+      gap: '4px',
+      p: '4px',
       bgcolor: t.border.row,
       border: `1px solid ${t.border.default}`,
-      borderRadius: '10px',
+      borderRadius: '12px',
+      boxShadow: 'inset 0 1px 2px rgba(60,40,20,0.05)',
     }}
   >
     {items.map((name, i) => {
@@ -83,32 +85,43 @@ const AppSegmentedTabs = ({ items, value, onChange }) => (
       return (
         <ButtonBase
           key={name}
+          role="tab"
+          aria-selected={on}
           onClick={() => onChange(i)}
           sx={{
-            gap: '7px',
-            height: 30,
-            px: '14px',
-            borderRadius: '8px',
+            gap: '9px',
+            height: 36,
+            px: '16px',
+            borderRadius: '9px',
+            border: `1px solid ${on ? t.tint.orangeBorder : 'transparent'}`,
             bgcolor: on ? t.surface.card : 'transparent',
-            boxShadow: on ? '0 1px 3px rgba(60,40,20,0.10)' : 'none',
+            boxShadow: on ? '0 2px 6px rgba(60,40,20,0.10)' : 'none',
             fontFamily: t.font.ui,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: on ? 800 : 600,
             color: on ? t.text.heading : t.text.label,
             whiteSpace: 'nowrap',
+            transition: 'background-color .18s, box-shadow .18s, color .18s, border-color .18s',
+            '&:hover': {
+              bgcolor: on ? t.surface.card : t.tint.orangeHover,
+              color: on ? t.text.heading : t.brand.orangeText,
+            },
+            '&.Mui-focusVisible': { boxShadow: t.shadow.focus },
           }}
         >
           <Box
             sx={{
-              width: 18,
-              height: 18,
-              borderRadius: '5px',
+              width: 22,
+              height: 22,
+              borderRadius: '7px',
               display: 'grid',
               placeItems: 'center',
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: 800,
-              bgcolor: on ? t.tint.orange : 'transparent',
-              color: on ? t.brand.orangeText : t.chrome.mutedBadgeText,
+              bgcolor: on ? t.brand.orange : t.surface.card,
+              border: `1px solid ${on ? t.brand.orange : t.border.default}`,
+              color: on ? t.surface.card : t.chrome.mutedBadgeText,
+              transition: 'background-color .18s, color .18s',
             }}
           >
             {i + 1}

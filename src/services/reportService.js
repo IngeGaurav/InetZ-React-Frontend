@@ -22,4 +22,9 @@ export const reportService = {
 
   getOutputEmissions: (siteId, year) =>
     api.get(endpoints.output.outputEmissions(siteId), { year }).then(unwrapResponseModel),
+
+  // Backs /report/monthly-summary — see docs/MONTHLY_SUMMARY_ANALYSIS.md. Response is cached
+  // server-side (a static field, invalidated on data recalculation) and takes no params — always
+  // "current month vs. previous month" as of when the backend last computed it.
+  getMonthlyReport: () => api.get(endpoints.output.monthlyReport).then(unwrapResponseModel),
 };

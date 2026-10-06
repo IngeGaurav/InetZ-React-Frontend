@@ -45,6 +45,11 @@ export const queryKeys = {
     outputEmissions: (siteId, year) => ['report', 'output-emissions', siteId, year],
   },
 
+  // Monthly Summary route (/report/monthly-summary) — see docs/MONTHLY_SUMMARY_ANALYSIS.md
+  monthlySummary: {
+    report: () => ['monthly-summary', 'report'],
+  },
+
   // Generic paginated list helper
   paginatedList: (entity, params) => [entity, 'list', params],
 };
