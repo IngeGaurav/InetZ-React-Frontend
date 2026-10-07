@@ -6,21 +6,42 @@ import { PageTitle } from '@/components/common/PageTitle/PageTitle';
 import { MultiSelect } from '@/components/common/MultiSelect/MultiSelect';
 import { C, CHART_COLORS, noto, dm } from './monthlySummaryTheme';
 import { HighchartsChart } from './components/HighchartsChart';
+import { EquipmentSummaryCard } from './components/EquipmentSummaryCard';
+import { PlantSummaryCard } from './components/PlantSummaryCard';
 import {
-  Bullets,
+  SummaryCard,
   Legend,
   ChartHeader,
   Empty,
+  StatTile,
   cardSx,
   titleSx,
 } from './components/MonthlySummaryPrimitives';
-import {
-  overallChartOptions,
-  siteChartOptions,
-  plantChartOptions,
-  donutChartOptions,
-} from './components/monthlyChartOptions';
+import { siteChartOptions, donutChartOptions } from './components/monthlyChartOptions';
 import { useMonthlySummaryData } from './hooks/useMonthlySummaryData';
+
+// Small increase/decrease badge. Styling follows the design handoff (error red on error halo for
+// both directions; only the arrow changes). `html` is backend-composed or built from backend values.
+const ChangeBadge = ({ html, isDecrease }) => (
+  <Box
+    sx={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      alignSelf: 'flex-start',
+      px: '8px',
+      py: '3px',
+      borderRadius: '6px',
+      bgcolor: C.errorHalo,
+      color: C.error,
+      fontFamily: noto,
+      fontSize: 11.5,
+    }}
+  >
+    <span>{isDecrease ? '▼' : '▲'}</span>
+    <span dangerouslySetInnerHTML={{ __html: html }} />
+  </Box>
+);
 
 /**
  * Monthly GHG Summary (/report/monthly-summary) — visual layer ported pixel-accurately from the
@@ -58,18 +79,65 @@ const MonthlySummaryPage = () => {
     [filteredPlants]
   );
 
-  const overallOpts = useMemo(
-    () =>
-      overall
-        ? overallChartOptions({
-            prevLabel: period.prevLabel,
-            currLabel: period.currLabel,
-            overall,
-            colors: CHART_COLORS,
-          })
-        : null,
-    [overall, period]
-  );
+  // Four headline tiles: overall tCO₂e, intensity, Scope 1, Scope 2. Scope tiles reuse the
+  // backend's own comparison label; total/intensity have no backend label, so their % change is
+  // derived here from the two backend values (simple delta, not a recalculated business figure).
+  const summaryTiles = useMemo(() => {
+    if (!overall || !scopes.length) {
+      return [];
+    }
+    const fmt0 = (n) => Math.round(n).toLocaleString('en-US');
+    const deltaHtml = (prev, curr) => {
+      const pct = prev ? Math.round(((curr - prev) / prev) * 100) : 0;
+      return {
+        html: `<b>${Math.abs(pct)}%</b> ${pct < 0 ? 'decrease' : 'increase'} over previous month`,
+        isDecrease: pct < 0,
+      };
+    };
+    const [prevTotal, currTotal] = overall.total;
+    const [prevInt, currInt] = overall.intensity;
+    const total = deltaHtml(prevTotal, currTotal);
+    const intensity = deltaHtml(prevInt, currInt);
+    const [s1, s2] = scopes;
+    return [
+      {
+        label: 'Overall tCO₂e',
+        value: fmt0(currTotal),
+        prevValue: fmt0(prevTotal),
+        bg: C.gradTeal,
+        border: C.tealBorder,
+        accent: C.gradTealTone,
+        badge: <ChangeBadge {...total} />,
+      },
+      {
+        label: 'Intensity',
+        value: currInt.toFixed(2),
+        prevValue: prevInt.toFixed(2),
+        bg: C.gradSand,
+        border: C.n200,
+        accent: C.gradSandTone,
+        badge: <ChangeBadge {...intensity} />,
+      },
+      {
+        label: 'Scope 1 tCO₂e',
+        value: fmt0(s1.curr),
+        prevValue: fmt0(s1.prev),
+        bg: C.gradSuccess,
+        border: C.successBg,
+        accent: C.gradSuccessTone,
+        badge: <ChangeBadge html={s1.labelHtml} isDecrease={s1.isDecrease} />,
+      },
+      {
+        label: 'Scope 2 tCO₂e',
+        value: fmt0(s2.curr),
+        prevValue: fmt0(s2.prev),
+        bg: C.gradSuccess,
+        border: C.successBg,
+        accent: C.gradSuccessTone,
+        badge: <ChangeBadge html={s2.labelHtml} isDecrease={s2.isDecrease} />,
+      },
+    ];
+  }, [overall, scopes]);
   const siteOpts = useMemo(
     () =>
       period
@@ -81,17 +149,6 @@ const MonthlySummaryPage = () => {
           })
         : null,
     [filteredSites, period]
-  );
-  const plantOpts = useMemo(
-    () =>
-      period
-        ? plantChartOptions({
-            plants: plantsWithColor,
-            prevLabel: period.prevLabel,
-            currLabel: period.currLabel,
-          })
-        : null,
-    [plantsWithColor, period]
   );
   const donutPrev = useMemo(
     () =>
@@ -203,92 +260,35 @@ const MonthlySummaryPage = () => {
             mb: '12px',
           }}
         >
-          <Box sx={{ ...cardSx, display: 'flex', flexDirection: 'column' }}>
-            <Typography component="h3" sx={{ ...titleSx, textAlign: 'center' }}>
-              Overall tCO₂e emissions and intensity
-            </Typography>
-            <HighchartsChart options={overallOpts} height={200} />
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: '14px' }}>
-              <Legend items={[{ name: 'tCO₂e', color: CHART_COLORS.prev }]} />
-              <Legend items={[{ name: 'Intensity', color: CHART_COLORS.curr }]} square={false} />
+          {/* Card 1 — the four headline numbers as tiles (replaces the old overall chart + scope card). */}
+          <Box sx={{ ...cardSx, p: 0, display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ px: '16px', py: '10px', borderBottom: `1px solid ${C.border}` }}>
+              <Typography component="h3" sx={titleSx}>
+                Overall Summary · {period.currLabel} vs {period.prevLabel}
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                p: '12px',
+                flex: 1,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                gap: '10px',
+              }}
+            >
+              {summaryTiles.map((tile) => (
+                <StatTile
+                  key={tile.label}
+                  currLabel={period.currLabel}
+                  prevLabel={period.prevLabel}
+                  {...tile}
+                />
+              ))}
             </Box>
           </Box>
 
-          <Box sx={{ ...cardSx, p: '4px 18px', display: 'flex', flexDirection: 'column' }}>
-            {scopes.map((s, i) => (
-              <Box
-                key={s.title}
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  py: '8px',
-                  borderBottom: i < scopes.length - 1 ? `1px solid ${C.border}` : 'none',
-                }}
-              >
-                <Typography component="h3" sx={{ ...titleSx, textAlign: 'center' }}>
-                  {s.title}
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '10px',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px',
-                      fontFamily: noto,
-                      fontSize: 13,
-                      color: C.muted,
-                    }}
-                  >
-                    <span>
-                      {period.currLabel}:{' '}
-                      <strong style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>
-                        {Math.round(s.curr).toLocaleString('en-US')}
-                      </strong>
-                    </span>
-                    <span>
-                      {period.prevLabel}:{' '}
-                      <strong style={{ fontWeight: 700, color: C.body }}>
-                        {Math.round(s.prev).toLocaleString('en-US')}
-                      </strong>
-                    </span>
-                  </Box>
-                  <Box
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      display: 'grid',
-                      placeItems: 'center',
-                      borderRadius: '10px',
-                      bgcolor: C.errorHalo,
-                      color: C.error,
-                      fontSize: 20,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {s.isDecrease ? '\u25bc' : '\u25b2'}
-                  </Box>
-                </Box>
-                <Typography
-                  sx={{ fontFamily: noto, fontSize: 13, color: C.body }}
-                  dangerouslySetInnerHTML={{ __html: s.labelHtml }}
-                />
-              </Box>
-            ))}
-          </Box>
-
-          <Box sx={{ ...cardSx, p: '16px 20px' }}>
-            <Bullets items={insights.overall} maxHeight={232} />
-          </Box>
+          {/* Card 2 — narrative summary. */}
+          <SummaryCard items={insights.overall} />
         </Box>
 
         {/* Row 2 */}
@@ -316,79 +316,30 @@ const MonthlySummaryPage = () => {
               ]}
             />
           </Box>
-          <Box sx={{ ...cardSx, display: 'flex', flexDirection: 'column' }}>
-            <ChartHeader title="Plant-wise tCO₂e emissions">
-              <MultiSelect
-                options={allPlantNames}
-                selected={filteredPlants.map((p) => p.name)}
-                onToggle={togglePlant}
-              />
-            </ChartHeader>
-            {filteredPlants.length ? (
-              <HighchartsChart options={plantOpts} height={210} />
-            ) : (
-              <Empty text="No plants selected." />
-            )}
-            <Legend items={plantsWithColor.map((p) => ({ name: p.name, color: p.color }))} />
-          </Box>
-          <Box sx={{ ...cardSx, maxHeight: 300, overflowY: 'auto' }}>
-            <Bullets items={insights.plant} />
-          </Box>
+          <PlantSummaryCard
+            plants={plantsWithColor}
+            period={period}
+            allPlantNames={allPlantNames}
+            onTogglePlant={togglePlant}
+          />
+          <SummaryCard items={insights.plant} />
         </Box>
 
         {/* Row 3 */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-          <Box
-            sx={{
-              ...cardSx,
-              flex: '1.6 1 520px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-            }}
-          >
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                gap: '12px',
-              }}
-            >
-              {[
-                [period.prevLabel, donutPrev],
-                [period.currLabel, donutCurr],
-              ].map(([label, opts]) => (
-                <Box
-                  key={label}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  <Typography component="h3" sx={titleSx}>
-                    Equipment-Wise tCO₂e Contribution
-                  </Typography>
-                  {opts && <HighchartsChart options={opts} height={170} />}
-                  <Typography
-                    sx={{ fontFamily: noto, fontSize: 13, fontWeight: 700, color: C.muted }}
-                  >
-                    {label}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-            <Legend
-              items={equipment.map((e, i) => ({
-                name: e.name,
-                color: CHART_COLORS.categorical[i % CHART_COLORS.categorical.length],
-              }))}
-            />
-          </Box>
-          <Box sx={{ ...cardSx, flex: '1 1 300px', maxHeight: 300, overflowY: 'auto' }}>
-            <Bullets items={insights.equipment} />
-          </Box>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '12px',
+          }}
+        >
+          <EquipmentSummaryCard
+            equipment={equipment}
+            period={period}
+            donutPrev={donutPrev}
+            donutCurr={donutCurr}
+          />
+          <SummaryCard items={insights.equipment} />
         </Box>
       </Box>
     </>

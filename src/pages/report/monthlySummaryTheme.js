@@ -40,6 +40,15 @@ export const C = {
   success: tokens.color.semantic.successText, // '#2E7D5B'
   error: t.semantic.error, // '#D9534F'
   errorHalo: tokens.color.semantic.errorBg, // '#FBE7E6'
+  tealBorder: tokens.color.teal.light, // '#CFF1F0' — summary tile border
+  tableHead: t.surface.tableHead, // '#FAF7F2'
+  successBg: tokens.color.semantic.successBg, // '#E7F5EC' — summary tile border
+  gradTeal: tokens.cardGradient.teal.css, // summary tiles: existing card gradients + their tones
+  gradTealTone: tokens.cardGradient.teal.tone,
+  gradSand: tokens.cardGradient.sand.css,
+  gradSandTone: tokens.cardGradient.sand.tone,
+  gradSuccess: tokens.cardGradient.success.css,
+  gradSuccessTone: tokens.cardGradient.success.tone,
 };
 
 // Chart series colors only — kept as literal aliases of the design's own values (not restyled;
