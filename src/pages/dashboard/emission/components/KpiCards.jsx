@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { C, dm, noto } from '../emissionTheme';
 import { cardSx } from './ChartCard';
+import { compact } from './Layout';
 
 const fmt = (n) => Math.round(n).toLocaleString('en-US');
 
@@ -17,6 +18,7 @@ const cardInner = {
   display: 'flex',
   flexDirection: 'column',
   gap: '8px',
+  [compact]: { p: '10px 11px', gap: '6px' },
 };
 
 // KPI card (handoff `KpiCard`): label + "% of target" pill, big value + unit, progress bar
@@ -39,7 +41,13 @@ export const KpiCard = ({ k }) => {
   return (
     <Box sx={cardInner}>
       <Box
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px',
+          [compact]: { flexDirection: 'column', alignItems: 'flex-start', gap: '4px' },
+        }}
       >
         <Typography sx={{ fontFamily: noto, fontSize: 11.5, fontWeight: 700, color: C.subtle }}>
           {k.label}
@@ -56,6 +64,7 @@ export const KpiCard = ({ k }) => {
             fontSize: 10.5,
             fontWeight: 800,
             whiteSpace: 'nowrap',
+            [compact]: { fontSize: 9.5, px: '6px' },
           }}
         >
           {k.pill}
@@ -67,6 +76,7 @@ export const KpiCard = ({ k }) => {
           sx={{
             fontFamily: dm,
             fontSize: 18,
+            [compact]: { fontSize: 15 },
             fontWeight: 800,
             color: C.ink,
             letterSpacing: '-0.02em',
@@ -114,10 +124,12 @@ export const KpiCard = ({ k }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '8px',
+          flexWrap: 'wrap',
+          gap: '2px 8px',
           fontFamily: noto,
           fontSize: 11,
           color: C.subtle,
+          [compact]: { fontSize: 10, gap: '2px 6px' },
         }}
       >
         <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
@@ -140,18 +152,23 @@ export const PeriodCard = ({ month, today }) => {
         display: 'flex',
         flexDirection: 'column',
         gap: '5px',
-        ...(divider && { pl: '12px', borderLeft: `1px solid ${C.divider}` }),
+        ...(divider && {
+          pl: '12px',
+          borderLeft: `1px solid ${C.divider}`,
+          [compact]: { pl: '8px' },
+        }),
       }}
     >
       <Typography sx={{ fontFamily: noto, fontSize: 11.5, fontWeight: 700, color: C.subtle }}>
         {label}
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: '6px' }}>
         <Box
           component="span"
           sx={{
             fontFamily: dm,
             fontSize: 16,
+            [compact]: { fontSize: 14 },
             fontWeight: 800,
             color: C.ink,
             letterSpacing: '-0.02em',
@@ -161,7 +178,13 @@ export const PeriodCard = ({ month, today }) => {
         </Box>
         <Box
           component="span"
-          sx={{ fontFamily: noto, fontSize: 11, fontWeight: 600, color: C.faint }}
+          sx={{
+            fontFamily: noto,
+            fontSize: 11,
+            fontWeight: 600,
+            color: C.faint,
+            [compact]: { fontSize: 10 },
+          }}
         >
           tCO₂e
         </Box>
@@ -177,6 +200,7 @@ export const PeriodCard = ({ month, today }) => {
         gridTemplateColumns: '1fr 1fr',
         alignItems: 'center',
         gap: '12px',
+        [compact]: { p: '10px 11px', gap: '8px' },
       }}
     >
       {cell('This month', month)}

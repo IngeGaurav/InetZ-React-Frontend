@@ -31,7 +31,15 @@ const base = (extra) =>
         style: { color: C.body, fontSize: '11.5px', fontFamily: dm },
         shadow: { color: 'rgba(40,30,20,0.12)', offsetX: 0, offsetY: 6, width: 14 },
       },
-      xAxis: { lineColor: C.n200, tickLength: 0, labels: axisLab },
+      // Never rotate x labels (a narrow card would tilt them 45deg); overlapping ones are skipped.
+      xAxis: {
+        lineColor: C.n200,
+        tickLength: 0,
+        labels: {
+          ...axisLab,
+          autoRotation: false,
+        },
+      },
       yAxis: {
         title: { text: null },
         gridLineColor: C.grid,
@@ -65,7 +73,8 @@ export function dailyOptions({ categories, s1, s2 }) {
   return base({
     chart: { type: 'column' },
     // A date label every 3rd day. Bars and tooltips still cover every day.
-    xAxis: { categories, tickInterval: 3 },
+    // A date label every 3rd day, slightly smaller so adjacent labels keep a gap in a narrow card.
+    xAxis: { categories, labels: { step: 3, style: { fontSize: '9.5px' } } },
     yAxis: { min: 0 },
     tooltip: {
       shared: true,
@@ -210,16 +219,21 @@ export function donutOptions({ items, onSliceClick, selectedName }) {
 }
 
 // ── Top contributors: ranked horizontal bars with value + % labels ──────────────────────────
+// Always laid out for 5 rows: with fewer items the remaining slots are left empty (blank category,
+// no data), so every bar keeps the same thickness whether 1 or 5 equipment are shown.
+const CONTRIBUTOR_SLOTS = 5;
+
 export function contributorsOptions({ items }) {
+  const pad = Math.max(0, CONTRIBUTOR_SLOTS - items.length);
   return base({
     chart: { type: 'bar', spacing: [6, 10, 4, 4] },
     xAxis: {
-      categories: items.map((i) => i.name),
+      categories: [...items.map((i) => i.name), ...Array(pad).fill('')],
       lineWidth: 0,
       labels: { style: { color: C.body, fontSize: '11.5px', fontWeight: '700' } },
     },
     // Headroom so the value label of the longest bar sits outside it instead of over the fill.
-    yAxis: { visible: false, max: Math.max(...items.map((i) => i.value), 1) * 1.25 },
+    yAxis: { visible: false, max: Math.max(...items.map((i) => i.value), 1) * 1.5 },
     colors: CATEGORICAL,
     // Compact tooltip: name + value only.
     tooltip: {
@@ -248,7 +262,7 @@ export function contributorsOptions({ items }) {
         },
       },
     },
-    series: [{ name: 'tCO₂e', data: items.map((i) => i.value) }],
+    series: [{ name: 'tCO₂e', data: [...items.map((i) => i.value), ...Array(pad).fill(null)] }],
   });
 }
 

@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 import Box from '@mui/material/Box';
 import { C, dm, noto } from '../emissionTheme';
 import { cardSx, CardHeader } from './ChartCard';
+import { compact } from './Layout';
 
 const fmt = (n) => Math.round(n).toLocaleString('en-US');
 
@@ -73,6 +74,21 @@ export const BreakdownTable = ({
             borderSpacing: 0,
             fontFamily: dm,
             fontSize: 12,
+            [compact]: {
+              minWidth: 0,
+              tableLayout: 'fixed',
+              fontSize: 11,
+              '& th:first-of-type': { width: 112 },
+              '& th, & td': { padding: '6px 8px' },
+              '& th': {
+                fontSize: 9.5,
+                letterSpacing: '0.02em',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              },
+              '& td.sub': { paddingLeft: '18px' },
+              '& td:first-of-type': { overflow: 'hidden', textOverflow: 'ellipsis' },
+            },
           }}
         >
           <thead>
@@ -86,6 +102,7 @@ export const BreakdownTable = ({
               {columns.map((name, j) => (
                 <Box
                   component="th"
+                  title={name}
                   key={name}
                   sx={{
                     ...th,
@@ -183,6 +200,7 @@ export const BreakdownTable = ({
                     >
                       <Box
                         component="td"
+                        className="sub"
                         sx={{
                           ...stickyCol,
                           bgcolor: C.card,

@@ -20,28 +20,10 @@ import { PageHeader } from './components/PageHeader';
 import { ChartCard, LegendInline } from './components/ChartCard';
 import { KpiCard, PeriodCard } from './components/KpiCards';
 import { BreakdownTable } from './components/BreakdownTable';
+import { Row, Cell, pageContainerSx } from './components/Layout';
 
 const OVERALL = 'Overall';
 const BASIS = ['Location', 'Market'];
-
-// Flex rows from the handoff: `flex: grow shrink basis`, wrapping.
-const FlexRow = ({ children }) => (
-  <Box
-    sx={{
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: '12px',
-      alignItems: 'stretch',
-      px: '4px',
-      pt: '12px',
-    }}
-  >
-    {children}
-  </Box>
-);
-const Cell = ({ flex, children }) => (
-  <Box sx={{ flex, minWidth: 0, display: 'flex', flexDirection: 'column' }}>{children}</Box>
-);
 
 /**
  * Emission Overview (/dashboard/emission-dashboard) — Organisation layout, or Site layout when a
@@ -172,6 +154,7 @@ const EmissionDashboardPage = () => {
           minHeight: '100%',
           px: '18px',
           pb: '22px',
+          ...pageContainerSx,
         }}
       >
         <PageHeader
@@ -197,28 +180,24 @@ const EmissionDashboardPage = () => {
           )}
         </PageHeader>
 
-        {/* Row 1 — four KPI cards + This month / Today */}
-        <Box
-          sx={{
-            px: '4px',
-            pt: '12px',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '12px',
-          }}
-        >
+        {/* Row 1 — four KPI cards + This month / Today, always 5 across. */}
+        <Row cols={{ base: 'repeat(5, minmax(0, 1fr))' }}>
           {kpis.map((k) => (
-            <KpiCard key={k.label} k={k} />
+            <Cell key={k.label}>
+              <KpiCard k={k} />
+            </Cell>
           ))}
-          <PeriodCard month={data.period.month} today={data.period.today} />
-        </Box>
+          <Cell>
+            <PeriodCard month={data.period.month} today={data.period.today} />
+          </Cell>
+        </Row>
 
         {hasSite ? (
           <>
             {/* Row 2 — one table per scope, as in Angular; the Location/Market basis tabs sit on
                 the Scope 2 table (the only one the basis affects). */}
-            <FlexRow>
-              <Cell flex="1 1 360px">
+            <Row cols={{ base: 'repeat(2, minmax(0, 1fr))' }}>
+              <Cell>
                 <BreakdownTable
                   flat
                   title="Scope 1 Emission Breakdown"
@@ -228,7 +207,7 @@ const EmissionDashboardPage = () => {
                   sx={{ flex: 1 }}
                 />
               </Cell>
-              <Cell flex="1 1 360px">
+              <Cell>
                 <BreakdownTable
                   flat
                   title="Scope 2 Emission Breakdown"
@@ -239,9 +218,9 @@ const EmissionDashboardPage = () => {
                   sx={{ flex: 1 }}
                 />
               </Cell>
-            </FlexRow>
-            <FlexRow>
-              <Cell flex="1 1 260px">
+            </Row>
+            <Row cols={{ base: 'minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1.7fr)' }}>
+              <Cell>
                 <ChartCard
                   title="Plant-Wise Contribution"
                   subtitle="Share of total tCO₂e"
@@ -250,26 +229,26 @@ const EmissionDashboardPage = () => {
                   expandable={false}
                 />
               </Cell>
-              <Cell flex="1.3 1 340px">
+              <Cell>
                 <ChartCard
                   title={`Monthly tCO₂e Emission - ${siteOrPlantName}`}
                   options={siteMonthlyOpts}
                   height={220}
                 />
               </Cell>
-              <Cell flex="1.7 1 400px">
+              <Cell>
                 <ChartCard
                   title={`Historical tCO₂e Emission Progression - ${siteOrPlantName}`}
                   options={historicalOpts}
                   height={220}
                 />
               </Cell>
-            </FlexRow>
+            </Row>
           </>
         ) : (
           <>
-            <FlexRow>
-              <Cell flex="1 1 260px">
+            <Row cols={{ base: 'minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1.15fr)' }}>
+              <Cell>
                 <ChartCard
                   title="Site-wise Contribution"
                   subtitle="Share of total tCO₂e"
@@ -278,7 +257,7 @@ const EmissionDashboardPage = () => {
                   expandable={false}
                 />
               </Cell>
-              <Cell flex="2 1 480px">
+              <Cell>
                 <ChartCard
                   title="Monthly tCO₂e Emission"
                   subtitle={data.monthly?.rangeLabel}
@@ -295,7 +274,7 @@ const EmissionDashboardPage = () => {
                   }
                 />
               </Cell>
-              <Cell flex="1 1 300px">
+              <Cell>
                 <ChartCard
                   title="Top Contributors"
                   subtitle="Equipment ranked by tCO₂e"
@@ -304,9 +283,9 @@ const EmissionDashboardPage = () => {
                   expandable={false}
                 />
               </Cell>
-            </FlexRow>
-            <FlexRow>
-              <Cell flex="1 1 440px">
+            </Row>
+            <Row cols={{ base: 'minmax(0, 1fr) minmax(0, 1.25fr)' }}>
+              <Cell>
                 <ChartCard
                   title="Target vs Actual tCO₂e"
                   chartKey={taScope}
@@ -338,7 +317,7 @@ const EmissionDashboardPage = () => {
                   }
                 />
               </Cell>
-              <Cell flex="1 1 460px">
+              <Cell>
                 <BreakdownTable
                   title="Scope 1 and Scope 2 Emission Breakdown"
                   subtitle="tCO₂e by source category and site"
@@ -347,7 +326,7 @@ const EmissionDashboardPage = () => {
                   sx={{ flex: 1 }}
                 />
               </Cell>
-            </FlexRow>
+            </Row>
           </>
         )}
       </Box>

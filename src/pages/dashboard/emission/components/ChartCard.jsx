@@ -6,6 +6,7 @@ import Dialog from '@mui/material/Dialog';
 import { DownloadIcon, ExpandIcon, CloseIcon, TableIcon, BarChartIcon } from '@/components/icons';
 import { HighchartsChart } from '@/pages/report/components/HighchartsChart';
 import { C, dm, noto } from '../emissionTheme';
+import { compact } from './Layout';
 
 const fmtCell = (v) =>
   v === null || v === undefined || v === ''
@@ -33,13 +34,15 @@ const tableFromOptions = (options) => {
 const DataTable = ({ options, height }) => {
   const { columns, rows } = tableFromOptions(options);
   const cell = {
-    py: '7px',
-    px: '14px',
+    py: '9px',
+    px: '18px',
+    minWidth: 150,
     fontFamily: noto,
-    fontSize: 12,
+    fontSize: 12.5,
     borderBottom: `1px solid ${C.rowLine}`,
     textAlign: 'right',
     color: C.body,
+    whiteSpace: 'nowrap',
   };
   return (
     <Box
@@ -50,46 +53,66 @@ const DataTable = ({ options, height }) => {
         scrollbarColor: `${C.n200} transparent`,
       }}
     >
-      <Box component="table" sx={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
-        <thead>
-          <tr>
-            {columns.map((c, j) => (
-              <Box
-                component="th"
-                key={c || 'cat'}
-                sx={{
-                  ...cell,
-                  position: 'sticky',
-                  top: 0,
-                  bgcolor: C.headBg,
-                  color: C.subtle,
-                  fontWeight: 700,
-                  fontSize: 10.5,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
-                  textAlign: j ? 'right' : 'left',
-                }}
-              >
-                {c}
-              </Box>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <Box component="tr" key={r[0]} sx={{ '&:hover > td': { bgcolor: C.rowHover } }}>
-              {r.map((v, j) => (
+      {/* Sized to its content and centred (not stretched to the dialog width) so a 2-column table
+          keeps its columns next to each other; `clip` (not hidden) keeps the sticky header working. */}
+      <Box
+        sx={{
+          width: 'fit-content',
+          maxWidth: '100%',
+          mx: 'auto',
+          border: `1px solid ${C.cardBorder}`,
+          borderRadius: '12px',
+          overflow: 'clip',
+        }}
+      >
+        <Box component="table" sx={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+          <thead>
+            <tr>
+              {columns.map((c, j) => (
                 <Box
-                  component="td"
-                  key={columns[j] || 'cat'}
-                  sx={{ ...cell, textAlign: j ? 'right' : 'left', fontWeight: j ? 600 : 700 }}
+                  component="th"
+                  key={c || 'cat'}
+                  sx={{
+                    ...cell,
+                    position: 'sticky',
+                    top: 0,
+                    bgcolor: C.headBg,
+                    color: C.subtle,
+                    fontWeight: 700,
+                    fontSize: 10.5,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    textAlign: j ? 'right' : 'left',
+                  }}
                 >
-                  {fmtCell(v)}
+                  {c}
                 </Box>
               ))}
-            </Box>
-          ))}
-        </tbody>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, ri) => (
+              <Box
+                component="tr"
+                key={`${r[0]}-${ri}`}
+                sx={{
+                  '&:hover > td': { bgcolor: C.rowHover },
+                  '&:last-of-type > td': { borderBottom: 'none' },
+                }}
+              >
+                {r.map((v, j) => (
+                  <Box
+                    component="td"
+                    key={columns[j] || 'cat'}
+                    sx={{ ...cell, textAlign: j ? 'right' : 'left', fontWeight: j ? 600 : 700 }}
+                  >
+                    {fmtCell(v)}
+                  </Box>
+                ))}
+              </Box>
+            ))}
+          </tbody>
+        </Box>
       </Box>
     </Box>
   );
@@ -107,6 +130,7 @@ export const cardSx = {
 const chartCardSx = {
   ...cardSx,
   p: '12px 15px 8px',
+  [compact]: { p: '10px 10px 6px' },
   display: 'flex',
   flexDirection: 'column',
   gap: '6px',
@@ -120,6 +144,7 @@ export const IconBtn = ({ title, onClick, children, active = false }) => (
     sx={{
       width: 30,
       height: 30,
+      [compact]: { width: 26, height: 26 },
       borderRadius: '8px',
       border: `1px solid ${C.cardBorder}`,
       bgcolor: C.card,
@@ -132,30 +157,51 @@ export const IconBtn = ({ title, onClick, children, active = false }) => (
   </ButtonBase>
 );
 
-export const CardHeader = ({ title, subtitle, children }) => (
+// `nowrap` keeps the right-hand controls beside the title (long titles wrap their own text instead
+// of pushing the icon buttons onto a second line); with tabs present it wraps instead.
+export const CardHeader = ({ title, subtitle, children, nowrap = false, large = false }) => (
   <Box
     sx={{
       display: 'flex',
       alignItems: 'flex-start',
       justifyContent: 'space-between',
       gap: '12px',
-      flexWrap: 'wrap',
+      flexWrap: nowrap ? 'nowrap' : 'wrap',
     }}
   >
-    <Box>
+    <Box sx={{ minWidth: 0 }}>
       <Typography
         component="h3"
-        sx={{ m: 0, fontFamily: dm, fontSize: 14, fontWeight: 800, color: C.title }}
+        sx={{
+          m: 0,
+          fontFamily: dm,
+          fontSize: large ? 16 : 14,
+          fontWeight: 800,
+          color: C.title,
+          ...(!large && { [compact]: { fontSize: 13 } }),
+        }}
       >
         {title}
       </Typography>
       {subtitle && (
-        <Typography sx={{ mt: '3px', fontFamily: noto, fontSize: 11.5, color: C.subtle }}>
+        <Typography
+          sx={{
+            mt: '3px',
+            fontFamily: noto,
+            fontSize: large ? 12 : 11.5,
+            color: C.subtle,
+            ...(!large && { [compact]: { fontSize: 10.5 } }),
+          }}
+        >
           {subtitle}
         </Typography>
       )}
     </Box>
-    {children && <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{children}</Box>}
+    {children && (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        {children}
+      </Box>
+    )}
   </Box>
 );
 
@@ -254,7 +300,12 @@ export const ChartCard = ({
   };
 
   const header = (inDialog) => (
-    <CardHeader title={title} subtitle={subtitle}>
+    <CardHeader
+      title={title}
+      subtitle={subtitle}
+      nowrap={inDialog || !headerExtra}
+      large={inDialog}
+    >
       {/* The expanded view shows the chart only (Angular's expand dialog has no tabs/toggle). */}
       {!inDialog && headerExtra}
       {inDialog && options && (
@@ -313,28 +364,51 @@ export const ChartCard = ({
                 width: '80vw',
                 maxWidth: 1100,
                 height: '78vh',
-                p: '14px 18px',
+                p: 0,
                 borderRadius: '16px',
+                overflow: 'hidden',
               },
             },
           }}
         >
-          {header(true)}
-          <Box sx={{ flex: 1, minHeight: 0 }}>
-            {options && showTable ? (
-              <DataTable options={options} height="calc(78vh - 120px)" />
-            ) : options ? (
-              <HighchartsChart
-                key={chartKey}
-                options={options}
-                height="calc(78vh - 150px)"
-                chartRef={dialogRef}
-              />
-            ) : (
-              <NoData height="calc(78vh - 150px)" />
-            )}
+          {/* Title bar — visually separate from the content below */}
+          <Box
+            sx={{
+              flex: 'none',
+              px: '22px',
+              py: '14px',
+              bgcolor: C.headBg,
+              borderBottom: `1px solid ${C.cardBorder}`,
+            }}
+          >
+            {header(true)}
           </Box>
-          {options && !showTable && legend}
+          {/* Content section */}
+          <Box
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              p: '18px 22px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Box sx={{ flex: 1, minHeight: 0 }}>
+              {options && showTable ? (
+                <DataTable options={options} height="calc(78vh - 150px)" />
+              ) : options ? (
+                <HighchartsChart
+                  key={chartKey}
+                  options={options}
+                  height="calc(78vh - 170px)"
+                  chartRef={dialogRef}
+                />
+              ) : (
+                <NoData height="calc(78vh - 170px)" />
+              )}
+            </Box>
+            {options && !showTable && legend}
+          </Box>
         </Dialog>
       )}
     </Box>
