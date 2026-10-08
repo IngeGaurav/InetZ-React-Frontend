@@ -50,6 +50,32 @@ export const queryKeys = {
     report: () => ['monthly-summary', 'report'],
   },
 
+  // Emission Dashboard routes (/dashboard/emission-dashboard[/equipment]) � see
+  // docs/EMISSION_DASHBOARD_ANALYSIS.md
+  emissionDashboard: {
+    sites: () => ['emission-dashboard', 'sites'],
+    plants: (siteId) => ['emission-dashboard', 'plants', siteId],
+    pie: (siteId, marketBased) => ['emission-dashboard', 'pie', siteId ?? 0, marketBased],
+    gauge: (n, scope, marketBased) => ['emission-dashboard', 'gauge', n, scope, marketBased],
+    monthly: (scope, marketBased) => ['emission-dashboard', 'monthly', scope, marketBased],
+    topContributors: (siteId, marketBased) => [
+      'emission-dashboard',
+      'top-contributors',
+      siteId,
+      marketBased,
+    ],
+    targetVsActual: (scope, marketBased) => [
+      'emission-dashboard',
+      'target-actual',
+      scope,
+      marketBased,
+    ],
+    overallTable: (url, marketBased) => ['emission-dashboard', 'overall-table', url, marketBased],
+    historical: (scope, marketBased) => ['emission-dashboard', 'historical', scope, marketBased],
+    equipmentTable: () => ['emission-dashboard', 'equipment-table'],
+    equipmentGraphBar: () => ['emission-dashboard', 'equipment-graph-bar'],
+  },
+
   // Generic paginated list helper
   paginatedList: (entity, params) => [entity, 'list', params],
 };

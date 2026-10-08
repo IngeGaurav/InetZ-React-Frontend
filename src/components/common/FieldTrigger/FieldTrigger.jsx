@@ -12,7 +12,7 @@ const t = componentTokens;
 
 const labelSx = { fontFamily: t.font.body, fontSize: 11, fontWeight: 600, color: t.text.label };
 
-const FieldTrigger = ({ label, width, open, onClick, children }) => (
+const FieldTrigger = ({ label, width, open, onClick, children, compact = false }) => (
   <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width }}>
     <Typography component="label" sx={labelSx}>
       {label}
@@ -20,15 +20,15 @@ const FieldTrigger = ({ label, width, open, onClick, children }) => (
     <ButtonBase
       onClick={onClick}
       sx={{
-        height: 36,
-        px: '12px',
+        height: compact ? 30 : 36,
+        px: compact ? '10px' : '12px',
         justifyContent: 'space-between',
         gap: '8px',
         bgcolor: t.surface.card,
         border: `1.5px solid ${open ? t.brand.orange : t.border.tableDivider}`,
         borderRadius: '8px',
         fontFamily: t.font.body,
-        fontSize: 12.5,
+        fontSize: compact ? 12 : 12.5,
         fontWeight: 600,
         color: t.text.body,
         '&:hover': { borderColor: t.brand.orange },

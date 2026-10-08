@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { PublicRoute } from './PublicRoute';
 import { AuthLayout } from '@/layouts/AuthLayout/AuthLayout';
@@ -21,7 +21,13 @@ const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 // eslint-disable-next-line react-refresh/only-export-components
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 // eslint-disable-next-line react-refresh/only-export-components
-const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
+const EmissionDashboardPage = lazy(
+  () => import('@/pages/dashboard/emission/EmissionDashboardPage')
+);
+// eslint-disable-next-line react-refresh/only-export-components
+const EquipmentEmissionPage = lazy(
+  () => import('@/pages/dashboard/emission/EquipmentEmissionPage')
+);
 // eslint-disable-next-line react-refresh/only-export-components
 const AnnualReportPage = lazy(() => import('@/pages/report/AnnualReportPage'));
 // eslint-disable-next-line react-refresh/only-export-components
@@ -67,7 +73,15 @@ const router = createBrowserRouter([
       {
         element: <DashboardLayout />,
         children: [
-          { path: ROUTES.DASHBOARD, element: wrap(DashboardPage) },
+          // /dashboard itself has no page — it lands on the emission dashboard (also the
+          // post-login redirect target). Angular's /dashboard is GHG Setup, which will live at
+          // /setup in React; see docs/EMISSION_DASHBOARD_ANALYSIS.md Q1.
+          {
+            path: ROUTES.DASHBOARD,
+            element: <Navigate to={ROUTES.DASHBOARD_EMISSION} replace />,
+          },
+          { path: ROUTES.DASHBOARD_EMISSION, element: wrap(EmissionDashboardPage) },
+          { path: ROUTES.DASHBOARD_EMISSION_EQUIPMENT, element: wrap(EquipmentEmissionPage) },
           { path: ROUTES.REPORT_REPORT, element: wrap(AnnualReportPage) },
           { path: ROUTES.REPORT_MONTHLY_SUMMARY, element: wrap(MonthlySummaryPage) },
           // Add more protected routes here as features grow

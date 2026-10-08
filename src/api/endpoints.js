@@ -35,6 +35,7 @@ export const endpoints = {
   // `{ status, data }` envelope as auth (see docs/auth-implementation.md) — unwrap with
   // `unwrapReportResponse` in reportService.js, don't assume axios's HTTP status alone.
   general: {
+    site: '/general/site',
     dropdown: '/general/dropdown', // ?type=&tabName=
     organisation: '/general/organisation',
     orgChart: '/general/orgChart',
@@ -42,6 +43,7 @@ export const endpoints = {
 
   emissions: {
     site: '/emissions/site',
+    plant: (siteId) => `/emissions/plant/${siteId}`,
   },
 
   output: {
@@ -49,5 +51,13 @@ export const endpoints = {
     reportEmissionYearScopeValues: '/output/getReportEmisisoYearScopeValues', // ?year=
     outputEmissions: (siteId) => `/output/organisation/outputEmissions/${siteId}`, // ?year=
     monthlyReport: '/output/monthlyReport',
+
+    // Emission Dashboard (/dashboard/emission-dashboard) � see docs/EMISSION_DASHBOARD_ANALYSIS.md
+    // A.5. `base` is 'organisation' | 'site' | 'siteLevel'; `suffix` is '' | '/{siteId}' |
+    // '/{siteId}/{plantId}' depending on base. All take ?marketBased=.
+    scoped: (base, name, suffix = '') => `/output/${base}/${name}${suffix}`,
+    equipmentTable: (siteId) => `/output/equipmentTable/${siteId}`,
+    equipmentGraphBar: '/output/equipmentGraphBar',
+    siteLevelOverallTable: (siteId) => `/output/siteLevel/overallTable/${siteId}`,
   },
 };

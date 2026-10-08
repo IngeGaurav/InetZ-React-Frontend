@@ -15,13 +15,14 @@ import { FieldTrigger } from '../FieldTrigger/FieldTrigger';
 
 const t = componentTokens;
 
-const Dropdown = ({ label, options, value, onChange, width = 200 }) => {
+const Dropdown = ({ label, options, value, onChange, width = 200, compact = false }) => {
   const [anchor, setAnchor] = useState(null);
   return (
     <>
       <FieldTrigger
         label={label}
         width={width}
+        compact={compact}
         open={!!anchor}
         onClick={(e) => setAnchor(e.currentTarget)}
       >
