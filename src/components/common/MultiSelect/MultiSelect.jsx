@@ -14,7 +14,7 @@ import { componentTokens } from '@/theme';
 
 const t = componentTokens;
 
-const MultiSelect = ({ options, selected, onToggle, width = 190 }) => {
+const MultiSelect = ({ options, selected, onToggle, width = 190, label }) => {
   const [anchor, setAnchor] = useState(null);
   return (
     <>
@@ -35,7 +35,7 @@ const MultiSelect = ({ options, selected, onToggle, width = 190 }) => {
           '&:hover': { borderColor: t.brand.orange },
         }}
       >
-        <span>{selected.length} items selected</span>
+        <span>{label ?? `${selected.length} items selected`}</span>
         <Box sx={{ color: t.chrome.iconAccent, display: 'flex' }}>
           <ChevronDownIcon size={14} />
         </Box>

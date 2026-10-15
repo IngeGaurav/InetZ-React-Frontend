@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
@@ -8,6 +8,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { initials } from '@/utils/formatUtils';
 import { componentTokens } from '@/theme';
 import { REPORT_SINGLE_NAV } from './shellNav';
+import { DashboardNav } from './DashboardNav';
+import { ROUTES } from '@/constants/routes';
 import ingeneroLogo from '@/assets/brand/ingenero-logo.png';
 
 const t = componentTokens;
@@ -15,6 +17,10 @@ const t = componentTokens;
 const Sidebar = () => {
   const isCollapsed = useSelector(selectSidebarCollapsed);
   const { user } = useAuth();
+  // The nav is chosen by route group, not by an Angular-style sessionStorage flag (B.21):
+  // /dashboard/* gets Monitor/Target Setting/Edit-Enter Data; everything else the report links.
+  const { pathname } = useLocation();
+  const inDashboardGroup = pathname.startsWith(ROUTES.DASHBOARD);
 
   return (
     <Box
@@ -94,56 +100,60 @@ const Sidebar = () => {
             },
           }}
         >
-          {REPORT_SINGLE_NAV.map(({ label, to, icon: Icon }) => (
-            <Box
-              key={to}
-              component={NavLink}
-              to={to}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '9px 11px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                color: '#FFF',
-                backgroundColor: 'transparent',
-                textDecoration: 'none',
-                transition: 'background .15s',
-                '&.active': {
-                  backgroundColor: t.shell.railActiveBg,
-                  boxShadow: '0 2px 7px rgba(0,0,0,0.2)',
-                },
-                '&.active .sidebar-nav-label': { fontWeight: 700 },
-              }}
-            >
+          {inDashboardGroup ? (
+            <DashboardNav />
+          ) : (
+            REPORT_SINGLE_NAV.map(({ label, to, icon: Icon }) => (
               <Box
+                key={to}
+                component={NavLink}
+                to={to}
                 sx={{
-                  display: 'inline-flex',
+                  display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 18,
-                  height: 18,
-                  flex: 'none',
+                  gap: '10px',
+                  padding: '9px 11px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
                   color: '#FFF',
+                  backgroundColor: 'transparent',
+                  textDecoration: 'none',
+                  transition: 'background .15s',
+                  '&.active': {
+                    backgroundColor: t.shell.railActiveBg,
+                    boxShadow: '0 2px 7px rgba(0,0,0,0.2)',
+                  },
+                  '&.active .sidebar-nav-label': { fontWeight: 700 },
                 }}
               >
-                <Icon size={18} />
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 18,
+                    height: 18,
+                    flex: 'none',
+                    color: '#FFF',
+                  }}
+                >
+                  <Icon size={18} />
+                </Box>
+                <Typography
+                  className="sidebar-nav-label"
+                  sx={{
+                    fontFamily: t.font.ui,
+                    fontWeight: 500,
+                    fontSize: '12px',
+                    lineHeight: 1.2,
+                    color: '#FFF',
+                  }}
+                >
+                  {label}
+                </Typography>
               </Box>
-              <Typography
-                className="sidebar-nav-label"
-                sx={{
-                  fontFamily: t.font.ui,
-                  fontWeight: 500,
-                  fontSize: '12px',
-                  lineHeight: 1.2,
-                  color: '#FFF',
-                }}
-              >
-                {label}
-              </Typography>
-            </Box>
-          ))}
+            ))
+          )}
         </Box>
 
         {/* Footer */}

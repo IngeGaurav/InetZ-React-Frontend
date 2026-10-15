@@ -64,73 +64,77 @@ const AppTabs = ({ tabs, value, onChange }) => (
   </Box>
 );
 
-const AppSegmentedTabs = ({ items, value, onChange }) => (
-  <Box
-    role="tablist"
-    sx={{
-      display: 'inline-flex',
-      flexWrap: 'wrap',
-      maxWidth: '100%',
-      alignSelf: 'flex-start',
-      gap: '4px',
-      p: '4px',
-      bgcolor: t.border.row,
-      border: `1px solid ${t.border.default}`,
-      borderRadius: '12px',
-      boxShadow: 'inset 0 1px 2px rgba(60,40,20,0.05)',
-    }}
-  >
-    {items.map((name, i) => {
-      const on = i === value;
-      return (
-        <ButtonBase
-          key={name}
-          role="tab"
-          aria-selected={on}
-          onClick={() => onChange(i)}
-          sx={{
-            gap: '9px',
-            height: 36,
-            px: '16px',
-            borderRadius: '9px',
-            border: `1px solid ${on ? t.tint.orangeBorder : 'transparent'}`,
-            bgcolor: on ? t.surface.card : 'transparent',
-            boxShadow: on ? '0 2px 6px rgba(60,40,20,0.10)' : 'none',
-            fontFamily: t.font.ui,
-            fontSize: 13,
-            fontWeight: on ? 800 : 600,
-            color: on ? t.text.heading : t.text.label,
-            whiteSpace: 'nowrap',
-            transition: 'background-color .18s, box-shadow .18s, color .18s, border-color .18s',
-            '&:hover': {
-              bgcolor: on ? t.surface.card : t.tint.orangeHover,
-              color: on ? t.text.heading : t.brand.orangeText,
-            },
-            '&.Mui-focusVisible': { boxShadow: t.shadow.focus },
-          }}
-        >
-          <Box
+// `size="sm"` is a compact variant (30px overall) for card headers sitting next to 30px icon buttons.
+const AppSegmentedTabs = ({ items, value, onChange, size = 'md' }) => {
+  const sm = size === 'sm';
+  return (
+    <Box
+      role="tablist"
+      sx={{
+        display: 'inline-flex',
+        flexWrap: 'wrap',
+        maxWidth: '100%',
+        alignSelf: 'flex-start',
+        gap: sm ? '3px' : '4px',
+        p: sm ? '3px' : '4px',
+        bgcolor: t.border.row,
+        border: `1px solid ${t.border.default}`,
+        borderRadius: '12px',
+        boxShadow: 'inset 0 1px 2px rgba(60,40,20,0.05)',
+      }}
+    >
+      {items.map((name, i) => {
+        const on = i === value;
+        return (
+          <ButtonBase
+            key={name}
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(i)}
             sx={{
-              width: 22,
-              height: 22,
-              borderRadius: '7px',
-              display: 'grid',
-              placeItems: 'center',
-              fontSize: 11,
-              fontWeight: 800,
-              bgcolor: on ? t.brand.orange : t.surface.card,
-              border: `1px solid ${on ? t.brand.orange : t.border.default}`,
-              color: on ? t.surface.card : t.chrome.mutedBadgeText,
-              transition: 'background-color .18s, color .18s',
+              gap: sm ? '6px' : '9px',
+              height: sm ? 22 : 36,
+              px: sm ? '10px' : '16px',
+              borderRadius: sm ? '7px' : '9px',
+              border: `1px solid ${on ? t.tint.orangeBorder : 'transparent'}`,
+              bgcolor: on ? t.surface.card : 'transparent',
+              boxShadow: on ? '0 2px 6px rgba(60,40,20,0.10)' : 'none',
+              fontFamily: t.font.ui,
+              fontSize: sm ? 11.5 : 13,
+              fontWeight: on ? 800 : 600,
+              color: on ? t.text.heading : t.text.label,
+              whiteSpace: 'nowrap',
+              transition: 'background-color .18s, box-shadow .18s, color .18s, border-color .18s',
+              '&:hover': {
+                bgcolor: on ? t.surface.card : t.tint.orangeHover,
+                color: on ? t.text.heading : t.brand.orangeText,
+              },
+              '&.Mui-focusVisible': { boxShadow: t.shadow.focus },
             }}
           >
-            {i + 1}
-          </Box>
-          {name}
-        </ButtonBase>
-      );
-    })}
-  </Box>
-);
+            <Box
+              sx={{
+                width: sm ? 16 : 22,
+                height: sm ? 16 : 22,
+                borderRadius: sm ? '5px' : '7px',
+                display: 'grid',
+                placeItems: 'center',
+                fontSize: sm ? 9.5 : 11,
+                fontWeight: 800,
+                bgcolor: on ? t.brand.orange : t.surface.card,
+                border: `1px solid ${on ? t.brand.orange : t.border.default}`,
+                color: on ? t.surface.card : t.chrome.mutedBadgeText,
+                transition: 'background-color .18s, color .18s',
+              }}
+            >
+              {i + 1}
+            </Box>
+            {name}
+          </ButtonBase>
+        );
+      })}
+    </Box>
+  );
+};
 
 export { AppTabs, AppSegmentedTabs };

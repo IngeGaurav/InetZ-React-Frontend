@@ -2,6 +2,30 @@
 
 Dated log of decisions that future sessions need to know about but that don't belong in code comments. Newest first.
 
+## 2026-10-07 — Emission Dashboard investigated; React route namespace moved to `/dashboard/emission-dashboard`
+
+**What happened:** the user asked for the Angular `/report/emission-dashboard` page (the app's main
+"Emission Overview", plus its `/equipment` sub-route) to be investigated for porting, following the
+same procedure used for the Annual Report and Monthly Summary. Full findings, API/SQL trace,
+documented bugs and open questions are in `docs/EMISSION_DASHBOARD_ANALYSIS.md`. No React code
+written yet.
+
+**Decision:** React routes are `/dashboard/emission-dashboard` and
+`/dashboard/emission-dashboard/equipment`, not Angular's `/report/…`. Angular only nested this page
+under `/report` because it shares `MonitorModule` with the report pages; it is a dashboard.
+
+**Open consequence (not decided here):** Angular's `/dashboard` is the *GHG Setup* module, and React's
+`ROUTES.DASHBOARD` (`/dashboard`) is the post-login redirect target and still a scaffold page. See
+Q1 in the analysis doc before registering these routes.
+
+**Follow-up (same day): implemented.** Decisions are recorded in the analysis doc's Section F. Ones
+other sessions must know: `/dashboard` redirects to `/dashboard/emission-dashboard` and GHG Setup
+will move to `/setup`; every chart uses Highcharts (modules registered in the shared
+`HighchartsChart.jsx`, with `fallbackToExportServer` forced off so chart data never leaves the
+app); chart colours come from the app palette, not Angular's; the Site/Plant filter lives in the
+page title row; the dashboard sidebar is chosen by route group and enforces the per-site access
+check Angular only intended; loading/error states are deferred by request.
+
 ## 2026-09-30 — Monthly Summary visual layer rebuilt from an approved design handoff; MultiSelect promoted to shared components
 
 **What happened:** same pattern as the GHG Report's redesign earlier the same day — the first
