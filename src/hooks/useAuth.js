@@ -47,7 +47,7 @@ export const useAuth = () => {
         })
       );
       toast.success(`Welcome back, ${name}!`);
-      navigate(ROUTES.DASHBOARD);
+      navigate(ROUTES.LANDING); // Angular: a successful login goes to /landing-page
       return;
     }
 

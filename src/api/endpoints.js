@@ -36,6 +36,7 @@ export const endpoints = {
   // `unwrapReportResponse` in reportService.js, don't assume axios's HTTP status alone.
   general: {
     site: '/general/site',
+    progress: '/general/progress', // recalculation progress, 0-100 (landing page)
     dropdown: '/general/dropdown', // ?type=&tabName=
     organisation: '/general/organisation',
     orgChart: '/general/orgChart',

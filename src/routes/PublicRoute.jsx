@@ -18,7 +18,7 @@ const PublicRoute = () => {
       storage.remove(STORAGE_KEYS.REDIRECT_URL);
       return <Navigate to={redirectUrl} replace />;
     }
-    return <Navigate to={ROUTES.DASHBOARD} replace />;
+    return <Navigate to={ROUTES.LANDING} replace />;
   }
 
   return <Outlet />;

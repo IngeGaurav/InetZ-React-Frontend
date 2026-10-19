@@ -8,8 +8,12 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
 
-  // App root
+  // App root — '/' redirects to the landing page (Angular's /landing-page), the home after login.
   HOME: '/',
+  LANDING: '/landing-page',
+  // Landing tiles whose pages are not built yet (they fall through to the 404 route).
+  SETUP: '/setup',
+  USER_MANAGEMENT: '/user-management',
 
   // Dashboard � Angular parks these under /report/* (they share MonitorModule with the report
   // pages); React groups them under /dashboard. See docs/EMISSION_DASHBOARD_ANALYSIS.md A.1.

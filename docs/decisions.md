@@ -2,6 +2,23 @@
 
 Dated log of decisions that future sessions need to know about but that don't belong in code comments. Newest first.
 
+## 2026-10-19 — Landing page (Angular `/landing-page`) is now the app home; ThemePreview no longer routed
+
+**What changed:** `/` now redirects to `/landing-page` (protected; unauthenticated visitors go on to `/login`).
+A successful login and `PublicRoute`'s "already logged in" redirect both land on `/landing-page`, as Angular's login
+does. `ThemePreview` is no longer routed anywhere (the file still exists, unused).
+
+**Landing page** (`src/pages/landing/LandingPage.jsx`) ports `LandingPageComponent`: top bar (logo, date, logout, username),
+the "GHG calculations … in progress (N % Complete)" ticker driven by `GET general/progress` (checked once, polled every 4 s
+only while < 98 %), and role-filtered tiles — Dashboard (all) · Report (not `USER`) · GHG Setup (not `USER`) · User Setup
+(SUPER_ADMIN only). Roles now come from the logged-in user, not `sessionStorage('rl')`.
+
+**Tile targets:** Dashboard → `/dashboard/emission-dashboard`, Report → `/report/report`, GHG Setup → `/setup`, User Setup →
+`/user-management`. The last two pages do not exist yet (they land on the 404 route). Angular's `sessionStorage('report'/'us')`
+flags and `isreportPage` side effects are not ported — the React sidebar is chosen by route group.
+
+**Not verified:** the progress ticker and polling against the real `general/progress` endpoint, and the logout flow.
+
 ## 2026-10-19 — Edit/Enter Data implemented as an exact Angular port; improvements deferred to a written work list
 
 **Decision:** build `/dashboard/edit-enter-data` with **no behavioural changes** from Angular, and record every

@@ -37,7 +37,7 @@ const AnnualReportPage = lazy(() => import('@/pages/report/AnnualReportPage'));
 // eslint-disable-next-line react-refresh/only-export-components
 const MonthlySummaryPage = lazy(() => import('@/pages/report/MonthlySummaryPage'));
 // eslint-disable-next-line react-refresh/only-export-components
-const ThemePreview = lazy(() => import('@/pages/ThemePreview'));
+const LandingPage = lazy(() => import('@/pages/landing/LandingPage'));
 // eslint-disable-next-line react-refresh/only-export-components
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 // eslint-disable-next-line react-refresh/only-export-components
@@ -50,11 +50,9 @@ const wrap = (Component) => (
 );
 
 const router = createBrowserRouter([
-  // ── Temporary: "/" shows the component/theme showcase directly, no login required.
-  // Login itself is left intact (still reachable at /login, untouched) but not wired
-  // up as the default route yet — swap this back to <Navigate to={ROUTES.DASHBOARD} />
-  // (or straight to ROUTES.LOGIN) once real auth is ready to be the entry point again.
-  { path: ROUTES.HOME, element: wrap(ThemePreview) },
+  // "/" is the app home: it goes to the landing page (Angular's /landing-page), which is protected —
+  // an unauthenticated visitor is sent on to /login by ProtectedRoute.
+  { path: ROUTES.HOME, element: <Navigate to={ROUTES.LANDING} replace /> },
 
   // ── Public routes (redirect out if already authenticated) ──
   {
@@ -74,6 +72,8 @@ const router = createBrowserRouter([
   {
     element: <ProtectedRoute />,
     children: [
+      // Landing page: full-screen, outside the dashboard shell (like Angular).
+      { path: ROUTES.LANDING, element: wrap(LandingPage) },
       {
         element: <DashboardLayout />,
         children: [

@@ -5,10 +5,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import { DataGrid, useGridApiRef } from '@mui/x-data-grid';
+import { DataGrid, GridEditInputCell, useGridApiRef } from '@mui/x-data-grid';
 import { PageTitle } from '@/components/common/PageTitle/PageTitle';
 import { Dropdown } from '@/components/common/Dropdown/Dropdown';
+import { DatePicker } from '@/components/common/DatePicker/DatePicker';
 import { EditIcon } from '@/components/icons';
 import { C, dm, noto } from '@/pages/dashboard/emission/emissionTheme';
 import { PageHeader } from '@/pages/dashboard/emission/components/PageHeader';
@@ -60,13 +60,31 @@ const gridSx = {
   },
   '& .MuiDataGrid-columnSeparator': { display: 'none' },
   '& .MuiDataGrid-cell': {
+    display: 'flex',
+    alignItems: 'center',
     px: '15px',
     borderBottom: `1px solid ${C.rowLine}`,
     fontWeight: 600,
     '&:focus, &:focus-within': { outline: 'none' },
   },
   '& .MuiDataGrid-row:hover': { bgcolor: C.rowHover },
-  '& .cell-edit': { cursor: 'text', bgcolor: C.hoverTint },
+  '& .cell-edit': { cursor: 'text', px: '12px' },
+  '& .MuiDataGrid-columnHeader[data-field="newValue"]': { px: '12px' },
+  // Editing: the whole cell becomes a white input with an orange outline.
+  '& .MuiDataGrid-cell--editing': { bgcolor: C.card, boxShadow: 'none' },
+  '& .MuiDataGrid-editInputCell': {
+    border: `1.5px solid ${C.orange}`,
+    borderRadius: '8px',
+    px: '10px',
+    height: 30,
+    fontFamily: noto,
+    fontSize: 12,
+    fontWeight: 600,
+    textAlign: 'center',
+    bgcolor: C.card,
+    '& input': { textAlign: 'center', p: 0 },
+    '& input::placeholder': { color: C.faint, opacity: 1, fontWeight: 500 },
+  },
   [compact]: {
     '& .MuiDataGrid-cell, & .MuiDataGrid-columnHeader': { px: '10px' },
     '& .MuiDataGrid-columnHeaderTitle': { fontSize: 9.5, letterSpacing: '0.02em' },
@@ -117,7 +135,10 @@ const EditEnterDataPage = () => {
   const plantList = useMemo(() => [ALL, ...(plantsQ.data ?? [])], [plantsQ.data]);
 
   const dataTag = `${date}|${siteId}|${plantId}|${rowsQ.dataUpdatedAt}`;
-  const edits = editState.tag === dataTag ? editState.values : {};
+  const edits = useMemo(
+    () => (editState.tag === dataTag ? editState.values : {}),
+    [editState, dataTag]
+  );
 
   // Rows get a unique key (config ids repeat across emission types); `newValue` is the typed edit.
   const rows = useMemo(
@@ -173,22 +194,52 @@ const EditEnterDataPage = () => {
         flex: 0.8,
         minWidth: 90,
         type: 'number',
-        align: 'right',
-        headerAlign: 'right',
+        align: 'center',
+        headerAlign: 'center',
         sortable: false,
         valueFormatter: (v) => fmt2(v),
       },
       {
         field: 'newValue',
         headerName: 'New Value',
-        flex: 0.8,
-        minWidth: 100,
+        flex: 0.9,
+        minWidth: 130,
         type: 'number',
-        align: 'right',
-        headerAlign: 'right',
+        align: 'center',
+        headerAlign: 'center',
         sortable: false,
         editable: true,
         cellClassName: 'cell-edit',
+        // Looks like an input even before it is clicked, so it is obvious a value goes here.
+        renderCell: (p) => (
+          <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+            <Box
+              sx={{
+                width: '100%',
+                height: 30,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                px: '10px',
+                bgcolor: C.card,
+                border: `1.5px solid ${C.n200}`,
+                borderRadius: '8px',
+                fontWeight: 600,
+                color: C.body,
+                '.MuiDataGrid-row:hover &': { borderColor: C.orange },
+              }}
+            >
+              {p.value === null || p.value === undefined || p.value === '' ? (
+                <Box component="span" sx={{ color: C.faint, fontWeight: 500 }}>
+                  Enter value
+                </Box>
+              ) : (
+                p.value
+              )}
+            </Box>
+          </Box>
+        ),
+        renderEditCell: (p) => <GridEditInputCell {...p} placeholder="Enter value" />,
       },
     ],
     []
@@ -208,9 +259,12 @@ const EditEnterDataPage = () => {
           fontFamily: dm,
           color: C.pageText,
           bgcolor: C.page,
-          minHeight: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
           px: '18px',
-          pb: '22px',
+          pb: '16px',
           ...pageContainerSx,
         }}
       >
@@ -220,22 +274,7 @@ const EditEnterDataPage = () => {
           subtitle="Edit recorded emission input values for a date"
         >
           <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: '16px', flexWrap: 'wrap' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width: 170 }}>
-              <Box
-                component="label"
-                htmlFor="eed-date"
-                sx={{ fontFamily: noto, fontSize: 11, fontWeight: 600, color: C.subtle }}
-              >
-                Time stamp
-              </Box>
-              <TextField
-                id="eed-date"
-                type="date"
-                size="small"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </Box>
+            <DatePicker label="Time stamp" value={date} onChange={setDate} width={170} />
             <Dropdown
               label="Site"
               options={siteList.map((s) => s.name)}
@@ -255,41 +294,62 @@ const EditEnterDataPage = () => {
           </Box>
         </PageHeader>
 
-        <Box sx={{ px: '4px', pt: '12px' }}>
-          <Box sx={{ ...cardSx, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ minHeight: 300, height: 'calc(100vh - 290px)', maxHeight: 640 }}>
-              <DataGrid
-                apiRef={apiRef}
-                rows={rows}
-                columns={columns}
-                getRowId={(r) => r.rowKey}
-                hideFooter
-                disableColumnMenu
-                disableColumnSorting
-                disableColumnResize
-                disableRowSelectionOnClick
-                columnHeaderHeight={36}
-                rowHeight={40}
-                localeText={{ noRowsLabel: 'No data available' }}
-                // Click-to-edit, like Angular's pEditableColumn (DataGrid defaults to double-click).
-                onCellClick={(p) => {
-                  if (p.field === 'newValue' && p.cellMode === 'view') {
-                    apiRef.current.startCellEditMode({ id: p.id, field: p.field });
-                  }
-                }}
-                processRowUpdate={(updated) => {
-                  setEditState({
-                    tag: dataTag,
-                    values: { ...edits, [updated.rowKey]: updated.newValue },
-                  });
-                  return updated;
-                }}
-                sx={gridSx}
-              />
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            px: '4px',
+            pt: '12px',
+          }}
+        >
+          <Box
+            sx={{
+              ...cardSx,
+              flex: 1,
+              minHeight: 0,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {/* The grid scrolls inside the card; the card takes all the height between header and Submit. */}
+            <Box sx={{ flex: 1, minHeight: 0, position: 'relative' }}>
+              <Box sx={{ position: 'absolute', inset: 0 }}>
+                <DataGrid
+                  apiRef={apiRef}
+                  rows={rows}
+                  columns={columns}
+                  getRowId={(r) => r.rowKey}
+                  hideFooter
+                  disableColumnMenu
+                  disableColumnSorting
+                  disableColumnResize
+                  disableRowSelectionOnClick
+                  columnHeaderHeight={36}
+                  rowHeight={40}
+                  localeText={{ noRowsLabel: 'No data available' }}
+                  // Click-to-edit, like Angular's pEditableColumn (DataGrid defaults to double-click).
+                  onCellClick={(p) => {
+                    if (p.field === 'newValue' && p.cellMode === 'view') {
+                      apiRef.current.startCellEditMode({ id: p.id, field: p.field });
+                    }
+                  }}
+                  processRowUpdate={(updated) => {
+                    setEditState({
+                      tag: dataTag,
+                      values: { ...edits, [updated.rowKey]: updated.newValue },
+                    });
+                    return updated;
+                  }}
+                  sx={gridSx}
+                />
+              </Box>
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: '12px' }}>
+          <Box sx={{ flex: 'none', display: 'flex', justifyContent: 'flex-end', pt: '12px' }}>
             {/* Angular: enabled whenever the table has rows, whether or not anything was edited. */}
             <Button
               variant="contained"

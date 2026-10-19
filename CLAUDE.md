@@ -51,6 +51,8 @@ Third route: **Target Setting** (Angular `/report/target-setting` → React `/da
 
 Fourth route: **Edit/Enter Data** (Angular `/report/edit-enter-data` → React `/dashboard/edit-enter-data`) — **implemented as an exact port of Angular (no behavioural changes, by decision)**; see `docs/EDIT_ENTER_DATA_ANALYSIS.md`. Every suggested frontend change (FE-1…FE-11, Section E.4) and backend change (EE-1…EE-13, Section C) is recorded there as the **later work list**, with detailed findings and code evidence in Section H. The page rewrites `calculation_history` (no audit trail, no authorisation, non-atomic; a multi-site submission is processed against the first row's site) — so none of those problems is mitigated yet. Not verified against a live backend.
 
+The app home is the **landing page** (`/landing-page`, `src/pages/landing/LandingPage.jsx`, port of Angular's `/landing-page`); `/` redirects there and login lands there. Its GHG Setup (`/setup`) and User Setup (`/user-management`) tiles point at pages that are not built yet. See `docs/decisions.md` (2026-10-19).
+
 ## Working across sessions
 
 This project is built up route-by-route across multiple Claude Code sessions. Sessions don't share memory automatically — durable, cross-session context belongs in this file and in `docs/`, not in any one conversation. When you learn something in a session that a future session (on this route or another) would need, write it here or add a doc under `docs/` and link it from this file.
