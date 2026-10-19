@@ -2,6 +2,35 @@
 
 Dated log of decisions that future sessions need to know about but that don't belong in code comments. Newest first.
 
+## 2026-10-19 — Edit/Enter Data implemented as an exact Angular port; improvements deferred to a written work list
+
+**Decision:** build `/dashboard/edit-enter-data` with **no behavioural changes** from Angular, and record every
+suggested frontend (FE-1…FE-11) and backend (EE-1…EE-13) change in `docs/EDIT_ENTER_DATA_ANALYSIS.md` to be done
+later from that document. Detailed findings with code evidence are in its Section H.
+
+**Consequence to remember:** the React page currently has the same hazards as Angular's — it posts the whole table,
+enables Submit with no edits, hides the unit, accepts 0/negative values the server ignores, reports success whatever the
+server did, and (backend) rewrites `calculation_history` with no audit trail, no authorisation, and a multi-site
+submission attributed to the first row's site. Only difference from Angular: a `USER` is redirected to the emission
+dashboard (the old `/report/equipment` page is not ported).
+
+## 2026-10-08 — Target Setting implemented at `/dashboard/target-setting`; backend problems logged as a backlog
+
+**What happened:** Angular `/report/target-setting` was investigated and then built in React
+(`src/pages/dashboard/target/`). Everything — Angular behaviour, each problem with impact, what the frontend
+does about it, and a prioritised backend backlog (BE-1…BE-12) — is in `docs/TARGET_SETTING_ANALYSIS.md`.
+Backend bugs are being handled separately; that doc is their work list.
+
+**Decisions:** plain styled table (Community DataGrid cannot pin the "Organization" row); stricter client-side
+validation than Angular; confirm dialog before overwriting an existing site target (it changes live
+Emission Dashboard numbers); line chart and Emission Dashboard queries refetch after a calculation; Angular's
+donut title and access rules kept; no design handoff existed, so it is built on existing tokens/components.
+
+**Things a later session must know:** the page cannot fix the backend's problems — notably a SQL injection in
+`target/barChart?name=` (BE-1), suspected unit errors in the Absolute Contraction maths (BE-2), a destructive
+non-atomic DELETE-then-INSERT save (BE-4), and no server-side authorisation (BE-6). Not verified against a live
+backend.
+
 ## 2026-10-07 — Emission Dashboard investigated; React route namespace moved to `/dashboard/emission-dashboard`
 
 **What happened:** the user asked for the Angular `/report/emission-dashboard` page (the app's main

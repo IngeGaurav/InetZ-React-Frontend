@@ -25,6 +25,10 @@ const EmissionDashboardPage = lazy(
   () => import('@/pages/dashboard/emission/EmissionDashboardPage')
 );
 // eslint-disable-next-line react-refresh/only-export-components
+const EditEnterDataPage = lazy(() => import('@/pages/dashboard/edit/EditEnterDataPage'));
+// eslint-disable-next-line react-refresh/only-export-components
+const TargetSettingPage = lazy(() => import('@/pages/dashboard/target/TargetSettingPage'));
+// eslint-disable-next-line react-refresh/only-export-components
 const EquipmentEmissionPage = lazy(
   () => import('@/pages/dashboard/emission/EquipmentEmissionPage')
 );
@@ -82,6 +86,8 @@ const router = createBrowserRouter([
           },
           { path: ROUTES.DASHBOARD_EMISSION, element: wrap(EmissionDashboardPage) },
           { path: ROUTES.DASHBOARD_EMISSION_EQUIPMENT, element: wrap(EquipmentEmissionPage) },
+          { path: ROUTES.DASHBOARD_TARGET_SETTING, element: wrap(TargetSettingPage) },
+          { path: ROUTES.DASHBOARD_EDIT_ENTER_DATA, element: wrap(EditEnterDataPage) },
           { path: ROUTES.REPORT_REPORT, element: wrap(AnnualReportPage) },
           { path: ROUTES.REPORT_MONTHLY_SUMMARY, element: wrap(MonthlySummaryPage) },
           // Add more protected routes here as features grow

@@ -44,6 +44,16 @@ export const endpoints = {
   emissions: {
     site: '/emissions/site',
     plant: (siteId) => `/emissions/plant/${siteId}`,
+    // Edit/Enter Data (/dashboard/edit-enter-data) — see docs/EDIT_ENTER_DATA_ANALYSIS.md A.3.
+    getEditDetails: '/emissions/getEditDetails', // ?timestamp=YYYY-MM-DD&site=&plant=
+    postEditDetails: '/emissions/postEditDetails', // POST: the only write
+  },
+
+  // Target Setting (/dashboard/target-setting) — see docs/TARGET_SETTING_ANALYSIS.md A.3.
+  target: {
+    list: '/target', // GET = stored targets, POST = run a calculation (the only write)
+    pieChart: '/target/pieChart',
+    barChart: '/target/barChart', // ?name=<site name>; empty name = organisation
   },
 
   output: {

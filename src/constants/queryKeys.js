@@ -76,6 +76,21 @@ export const queryKeys = {
     equipmentGraphBar: () => ['emission-dashboard', 'equipment-graph-bar'],
   },
 
+  // Target Setting route (/dashboard/target-setting) — see docs/TARGET_SETTING_ANALYSIS.md
+  targetSetting: {
+    all: () => ['target-setting'],
+    list: () => ['target-setting', 'list'],
+    pie: () => ['target-setting', 'pie'],
+    bar: (siteName) => ['target-setting', 'bar', siteName ?? ''],
+  },
+
+  // Edit/Enter Data route (/dashboard/edit-enter-data) — see docs/EDIT_ENTER_DATA_ANALYSIS.md
+  editEnterData: {
+    all: () => ['edit-enter-data'],
+    rows: (date, site, plant) => ['edit-enter-data', 'rows', date, site, plant],
+    plants: (siteId) => ['edit-enter-data', 'plants', siteId],
+  },
+
   // Generic paginated list helper
   paginatedList: (entity, params) => [entity, 'list', params],
 };
